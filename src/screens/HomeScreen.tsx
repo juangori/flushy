@@ -1,17 +1,18 @@
 import React from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ScrollView, 
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
   TouchableOpacity,
   StatusBar,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatCard, PrimaryButton } from '../components';
 import { DayData, Stats } from '../types';
-import { COLORS, BRISTOL_TYPES, getHealthColor } from '../constants';
+import { COLORS, BRISTOL_TYPES, getHealthColor, getStoolColorById } from '../constants';
 import { formatDate, calculateStats } from '../utils';
 
 interface HomeScreenProps {
@@ -53,7 +54,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           {/* Header */}
           <View style={styles.header}>
             <Text style={styles.dateText}>{dateString}</Text>
-            <Text style={styles.title}>How's it going? 💩</Text>
+            <View style={styles.titleRow}>
+              <Text style={styles.title}>How's it going? </Text>
+              <Image source={require('../../assets/flushy-emoji.png')} style={styles.titleEmoji} />
+            </View>
           </View>
 
           {/* Stats Row */}
@@ -104,17 +108,24 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                         {formatDate(day.date)}
                       </Text>
                       <View style={styles.recentTypes}>
-                        {day.entries.map((entry, i) => (
-                          <View
-                            key={i}
-                            style={[
-                              styles.typeBadge,
-                              { backgroundColor: getHealthColor(BRISTOL_TYPES[entry.type - 1].health) }
-                            ]}
-                          >
-                            <Text style={styles.typeBadgeText}>{entry.type}</Text>
-                          </View>
-                        ))}
+                        {day.entries.map((entry, i) => {
+                          const stoolColor = entry.color ? getStoolColorById(entry.color) : null;
+                          return (
+                            <View key={i} style={styles.entryBadgeGroup}>
+                              <View
+                                style={[
+                                  styles.typeBadge,
+                                  { backgroundColor: getHealthColor(BRISTOL_TYPES[entry.type - 1].health) }
+                                ]}
+                              >
+                                <Text style={styles.typeBadgeText}>{entry.type}</Text>
+                              </View>
+                              {stoolColor && (
+                                <View style={[styles.colorMiniDot, { backgroundColor: stoolColor.hex }]} />
+                              )}
+                            </View>
+                          );
+                        })}
                       </View>
                     </View>
                     <Text style={styles.recentCount}>
@@ -131,7 +142,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         <View style={styles.buttonContainer}>
           <PrimaryButton
             title="Log Now"
-            icon="💩"
+            icon={<Image source={require('../../assets/flushy-emoji.png')} style={{ width: 28, height: 28 }} />}
             onPress={onLogPress}
             variant="primary"
           />
@@ -174,12 +185,20 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
     textTransform: 'uppercase',
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 6,
+  },
   title: {
     color: COLORS.textPrimary,
     fontSize: 30,
     fontWeight: '700',
-    marginTop: 6,
     letterSpacing: -1,
+  },
+  titleEmoji: {
+    width: 34,
+    height: 34,
   },
   statsRow: {
     flexDirection: 'row',
@@ -226,6 +245,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 6,
     marginTop: 6,
+  },
+  entryBadgeGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  colorMiniDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
   },
   typeBadge: {
     width: 24,

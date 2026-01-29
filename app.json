@@ -1,12 +1,12 @@
 {
   "expo": {
-    "name": "Plop",
-    "slug": "plop",
+    "name": "Flushy",
+    "slug": "flushy",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
-    "scheme": "plop",
+    "scheme": "flushy",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -17,7 +17,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.plop.app",
+      "bundleIdentifier": "com.flushy.app",
       "buildNumber": "1"
     },
     "android": {
@@ -25,7 +25,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1a1a2e"
       },
-      "package": "com.plop.app"
+      "package": "com.flushy.app"
     },
     "web": {
       "favicon": "./assets/favicon.png"

@@ -37,13 +37,15 @@ export const usePoopHistory = () => {
   const addEntry = useCallback(async (
     type: BristolType,
     tags: string[] = [],
-    notes?: string
+    notes?: string,
+    color?: string
   ): Promise<boolean> => {
     const today = getTodayString();
-    
+
     const newEntry: LogEntry = {
       id: generateId(),
       type: type.type,
+      color,
       time: formatTime(),
       tags,
       notes,

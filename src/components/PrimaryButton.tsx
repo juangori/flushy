@@ -15,7 +15,7 @@ interface PrimaryButtonProps {
   onPress: () => void;
   disabled?: boolean;
   loading?: boolean;
-  icon?: string;
+  icon?: string | React.ReactNode;
   variant?: 'primary' | 'success' | 'secondary';
   style?: ViewStyle;
 }
@@ -69,7 +69,7 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
           <ActivityIndicator color={COLORS.textPrimary} />
         ) : (
           <>
-            {icon && <Text style={styles.icon}>{icon}</Text>}
+            {icon && (typeof icon === 'string' ? <Text style={styles.icon}>{icon}</Text> : icon)}
             <Text style={[
               styles.text,
               disabled && styles.textDisabled,

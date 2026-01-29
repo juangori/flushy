@@ -8,8 +8,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { DayData } from '../types';
-import { COLORS, QUICK_TAGS, BRISTOL_TYPES, getHealthColor } from '../constants';
-import { calculateStats, getTypeDistribution, getTagCorrelations } from '../utils';
+import { COLORS, QUICK_TAGS, BRISTOL_TYPES, getHealthColor, getStoolColorHealthColor } from '../constants';
+import { calculateStats, getTypeDistribution, getTagCorrelations, getColorDistribution } from '../utils';
 import { BristolIcon } from '../components/BristolIcons';
 
 interface InsightsScreenProps {
@@ -21,6 +21,8 @@ export const InsightsScreen: React.FC<InsightsScreenProps> = ({ history }) => {
   const typeDistribution = getTypeDistribution(history);
   const tagCorrelations = getTagCorrelations(history, QUICK_TAGS);
   const maxCount = Math.max(...typeDistribution.map(t => t.count), 1);
+  const colorDistribution = getColorDistribution(history);
+  const maxColorCount = Math.max(...colorDistribution.map(c => c.count), 1);
 
   return (
     <LinearGradient
@@ -76,6 +78,34 @@ export const InsightsScreen: React.FC<InsightsScreenProps> = ({ history }) => {
                   ))}
                 </View>
               </View>
+
+              {/* Color Distribution */}
+              {colorDistribution.length > 0 && (
+                <View style={styles.card}>
+                  <Text style={styles.cardTitle}>Color Distribution</Text>
+                  <View style={styles.distributionList}>
+                    {colorDistribution.map(item => (
+                      <View key={item.id} style={styles.distributionItem}>
+                        <View style={styles.colorSwatchSmall}>
+                          <View style={[styles.colorSwatchInner, { backgroundColor: item.hex }]} />
+                        </View>
+                        <View style={styles.barContainer}>
+                          <View
+                            style={[
+                              styles.bar,
+                              {
+                                width: `${(item.count / maxColorCount) * 100}%`,
+                                backgroundColor: getStoolColorHealthColor(item.health),
+                              }
+                            ]}
+                          />
+                        </View>
+                        <Text style={styles.distributionCount}>{item.count}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              )}
 
               {/* Health Score */}
               <LinearGradient
@@ -161,6 +191,9 @@ export const InsightsScreen: React.FC<InsightsScreenProps> = ({ history }) => {
                 <Text style={styles.tipText}>
                   • Types 5-7 may indicate digestive issues
                 </Text>
+                <Text style={styles.tipText}>
+                  • Unusual stool colors persisting 2-3+ days may warrant medical attention
+                </Text>
               </View>
 
               {/* Disclaimer */}
@@ -226,6 +259,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+  },
+  colorSwatchSmall: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  colorSwatchInner: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 12,
   },
   distributionEmoji: {
     width: 30,

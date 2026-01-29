@@ -12,9 +12,20 @@ export interface QuickTag {
   label: string;
 }
 
+export type StoolColorHealth = 'normal' | 'attention' | 'alert';
+
+export interface StoolColor {
+  id: string;
+  name: string;
+  hex: string;
+  description: string;
+  health: StoolColorHealth;
+}
+
 export interface LogEntry {
   id: string;
   type: number;
+  color?: string;
   time: string;
   tags: string[];
   notes?: string;

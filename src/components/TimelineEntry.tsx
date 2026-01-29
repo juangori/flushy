@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { LogEntry } from '../types';
-import { BRISTOL_TYPES, QUICK_TAGS, COLORS, getHealthColor } from '../constants';
+import { BRISTOL_TYPES, QUICK_TAGS, COLORS, getHealthColor, getStoolColorById } from '../constants';
 import { BristolIcon } from './BristolIcons';
 
 interface TimelineEntryProps {
@@ -10,7 +10,8 @@ interface TimelineEntryProps {
 
 export const TimelineEntry: React.FC<TimelineEntryProps> = ({ entry }) => {
   const bristolType = BRISTOL_TYPES[entry.type - 1];
-  
+  const stoolColor = entry.color ? getStoolColorById(entry.color) : null;
+
   return (
     <View style={[
       styles.container,
@@ -19,11 +20,16 @@ export const TimelineEntry: React.FC<TimelineEntryProps> = ({ entry }) => {
       <View style={styles.emojiContainer}>
         <BristolIcon type={entry.type} size={28} color={getHealthColor(bristolType.health)} />
       </View>
-      
+
       <View style={styles.content}>
-        <Text style={styles.title}>
-          Type {entry.type}: {bristolType.name}
-        </Text>
+        <View style={styles.titleRow}>
+          <Text style={styles.title}>
+            Type {entry.type}: {bristolType.name}
+          </Text>
+          {stoolColor && (
+            <View style={[styles.colorDot, { backgroundColor: stoolColor.hex }]} />
+          )}
+        </View>
         <Text style={styles.time}>{entry.time}</Text>
         
         {entry.tags.length > 0 && (
@@ -71,10 +77,22 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   title: {
     color: COLORS.textPrimary,
     fontSize: 15,
     fontWeight: '600',
+  },
+  colorDot: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   time: {
     color: COLORS.textMuted,

@@ -1,5 +1,5 @@
 import { DayData, Stats, LogEntry } from '../types';
-import { BRISTOL_TYPES } from '../constants';
+import { BRISTOL_TYPES, STOOL_COLORS } from '../constants';
 
 export const generateId = (): string => {
   return Date.now().toString(36) + Math.random().toString(36).substr(2);
@@ -69,9 +69,11 @@ export const calculateStats = (history: DayData[]): Stats => {
     ? (weekEntries.reduce((sum, e) => sum + e.type, 0) / weekEntries.length).toFixed(1)
     : '-';
   
-  // Health score (0-100, based on how close to type 4)
+  // Health score (0-100, only type 4 = 100, drops off from there)
+  // Distance from 4: 0→100, 1→70, 2→40, 3→10
   const avgTypeNum = parseFloat(avgType) || 4;
-  const healthScore = Math.round(((4 - Math.abs(avgTypeNum - 4)) / 3) * 100);
+  const distance = Math.abs(avgTypeNum - 4);
+  const healthScore = Math.round(Math.max(0, 100 - (distance * 30)));
   
   return { 
     streak, 
@@ -106,5 +108,18 @@ export const getTagCorrelations = (history: DayData[], quickTags: { id: string; 
       };
     })
     .filter(t => t.count > 0)
+    .sort((a, b) => b.count - a.count);
+};
+
+export const getColorDistribution = (history: DayData[]) => {
+  const allEntries = history.flatMap(d => d.entries);
+  const entriesWithColor = allEntries.filter(e => e.color);
+
+  return STOOL_COLORS
+    .map(sc => ({
+      ...sc,
+      count: entriesWithColor.filter(e => e.color === sc.id).length,
+    }))
+    .filter(c => c.count > 0)
     .sort((a, b) => b.count - a.count);
 };

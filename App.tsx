@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { StatusBar, View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { LinearGradient } from 'expo-linear-gradient';
 import { House, CalendarDays, ChartBar } from 'lucide-react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -12,33 +12,14 @@ import { usePoopHistory } from './src/hooks/usePoopHistory';
 import { COLORS } from './src/constants';
 import { BristolType } from './src/types';
 
-const Tab = createBottomTabNavigator();
-
-// Home wrapper to handle navigation to Log screen
-const HomeWrapper = ({ 
-  history, 
-  onLogPress, 
-  navigation 
-}: { 
-  history: any; 
-  onLogPress: () => void;
-  navigation: any;
-}) => {
-  return (
-    <HomeScreen 
-      history={history} 
-      onLogPress={onLogPress}
-      onTimelinePress={() => navigation.navigate('Timeline')}
-    />
-  );
-};
+const Tab = createMaterialTopTabNavigator();
 
 export default function App() {
   const { history, isLoading, addEntry, deleteEntry } = usePoopHistory();
   const [showLogScreen, setShowLogScreen] = useState(false);
 
-  const handleSaveEntry = async (type: BristolType, tags: string[]): Promise<boolean> => {
-    const success = await addEntry(type, tags);
+  const handleSaveEntry = async (type: BristolType, tags: string[], color: string): Promise<boolean> => {
+    const success = await addEntry(type, tags, undefined, color);
     if (success) {
       setShowLogScreen(false);
     }
@@ -63,7 +44,7 @@ export default function App() {
     return (
       <SafeAreaProvider>
         <StatusBar barStyle="light-content" />
-        <LogScreen 
+        <LogScreen
           onSave={handleSaveEntry}
           onCancel={() => setShowLogScreen(false)}
         />
@@ -95,12 +76,17 @@ export default function App() {
         }}
       >
         <Tab.Navigator
+          tabBarPosition="bottom"
           screenOptions={{
-            headerShown: false,
+            swipeEnabled: true,
+            animationEnabled: true,
             tabBarStyle: styles.tabBar,
             tabBarActiveTintColor: COLORS.primary,
             tabBarInactiveTintColor: COLORS.textMuted,
             tabBarLabelStyle: styles.tabLabel,
+            tabBarIndicatorStyle: styles.tabIndicator,
+            tabBarPressColor: 'transparent',
+            tabBarItemStyle: styles.tabItem,
           }}
         >
           <Tab.Screen
@@ -112,10 +98,10 @@ export default function App() {
             }}
           >
             {({ navigation }) => (
-              <HomeWrapper
+              <HomeScreen
                 history={history}
                 onLogPress={() => setShowLogScreen(true)}
-                navigation={navigation}
+                onTimelinePress={() => navigation.navigate('Timeline')}
               />
             )}
           </Tab.Screen>
@@ -164,12 +150,22 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.08)',
     height: 85,
-    paddingTop: 8,
+    paddingTop: 6,
     paddingBottom: 25,
     elevation: 0,
+  },
+  tabItem: {
+    paddingTop: 0,
   },
   tabLabel: {
     fontSize: 11,
     fontWeight: '500',
+    textTransform: 'none',
+    marginTop: 2,
+  },
+  tabIndicator: {
+    backgroundColor: COLORS.primary,
+    height: 2,
+    top: 0,
   },
 });
