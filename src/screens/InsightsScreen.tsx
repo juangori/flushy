@@ -8,8 +8,9 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { DayData } from '../types';
-import { COLORS, QUICK_TAGS, getHealthColor } from '../constants';
+import { COLORS, QUICK_TAGS, BRISTOL_TYPES, getHealthColor } from '../constants';
 import { calculateStats, getTypeDistribution, getTagCorrelations } from '../utils';
+import { BristolIcon } from '../components/BristolIcons';
 
 interface InsightsScreenProps {
   history: DayData[];
@@ -56,7 +57,9 @@ export const InsightsScreen: React.FC<InsightsScreenProps> = ({ history }) => {
                 <View style={styles.distributionList}>
                   {typeDistribution.map(item => (
                     <View key={item.type} style={styles.distributionItem}>
-                      <Text style={styles.distributionEmoji}>{item.emoji}</Text>
+                      <View style={styles.distributionEmoji}>
+                        <BristolIcon type={item.type} size={24} color={getHealthColor(item.health)} />
+                      </View>
                       <View style={styles.barContainer}>
                         <View 
                           style={[
@@ -91,6 +94,41 @@ export const InsightsScreen: React.FC<InsightsScreenProps> = ({ history }) => {
                 </Text>
               </LinearGradient>
 
+              {/* Average Type */}
+              <View style={styles.card}>
+                <Text style={styles.cardTitle}>Average Type</Text>
+                <View style={styles.avgTypeContent}>
+                  <Text style={styles.avgTypeValue}>{stats.avgType}</Text>
+                  <View style={styles.avgTypeInfo}>
+                    {stats.avgType !== '-' && (
+                      <>
+                        <View style={styles.avgTypeEmoji}>
+                          <BristolIcon
+                            type={Math.round(parseFloat(stats.avgType))}
+                            size={28}
+                            color={getHealthColor(BRISTOL_TYPES[Math.round(parseFloat(stats.avgType)) - 1]?.health)}
+                          />
+                        </View>
+                        <Text style={styles.avgTypeName}>
+                          {BRISTOL_TYPES[Math.round(parseFloat(stats.avgType)) - 1]?.name}
+                        </Text>
+                        <View style={[
+                          styles.avgTypeBadge,
+                          { backgroundColor: getHealthColor(BRISTOL_TYPES[Math.round(parseFloat(stats.avgType)) - 1]?.health) }
+                        ]}>
+                          <Text style={styles.avgTypeBadgeText}>
+                            {BRISTOL_TYPES[Math.round(parseFloat(stats.avgType)) - 1]?.desc}
+                          </Text>
+                        </View>
+                      </>
+                    )}
+                  </View>
+                </View>
+                <Text style={styles.avgTypeHint}>
+                  Weekly average across {stats.weekCount} logs
+                </Text>
+              </View>
+
               {/* Tag Correlations */}
               {tagCorrelations.length > 0 && (
                 <View style={styles.card}>
@@ -122,6 +160,13 @@ export const InsightsScreen: React.FC<InsightsScreenProps> = ({ history }) => {
                 </Text>
                 <Text style={styles.tipText}>
                   • Types 5-7 may indicate digestive issues
+                </Text>
+              </View>
+
+              {/* Disclaimer */}
+              <View style={styles.disclaimer}>
+                <Text style={styles.disclaimerText}>
+                  Stool classifications are based on the Bristol Stool Chart, a medical diagnostic tool developed at the Bristol Royal Infirmary. Health guidelines follow recommendations from the World Gastroenterology Organisation (WGO) and the World Health Organization (WHO). This app is for informational purposes only and does not replace professional medical advice. If you have concerns about your digestive health, please consult a healthcare professional.
                 </Text>
               </View>
             </>
@@ -183,8 +228,9 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   distributionEmoji: {
-    fontSize: 18,
     width: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   barContainer: {
     flex: 1,
@@ -237,6 +283,45 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginTop: 12,
   },
+  avgTypeContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  avgTypeValue: {
+    fontSize: 48,
+    fontWeight: '700',
+    color: COLORS.textPrimary,
+    letterSpacing: -2,
+  },
+  avgTypeInfo: {
+    flex: 1,
+    gap: 4,
+  },
+  avgTypeEmoji: {
+    marginBottom: 2,
+  },
+  avgTypeName: {
+    color: COLORS.textSecondary,
+    fontSize: 15,
+    fontWeight: '500',
+  },
+  avgTypeBadge: {
+    alignSelf: 'flex-start',
+    borderRadius: 8,
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+  },
+  avgTypeBadgeText: {
+    color: COLORS.bgTertiary,
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  avgTypeHint: {
+    color: COLORS.textMuted,
+    fontSize: 12,
+    marginTop: 12,
+  },
   correlationList: {
     gap: 12,
   },
@@ -281,6 +366,18 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     fontSize: 13,
     lineHeight: 22,
+  },
+  disclaimer: {
+    marginTop: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 4,
+  },
+  disclaimerText: {
+    color: COLORS.textMuted,
+    fontSize: 11,
+    lineHeight: 17,
+    textAlign: 'center',
+    opacity: 0.7,
   },
   emptyState: {
     flex: 1,

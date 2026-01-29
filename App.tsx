@@ -5,6 +5,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { LinearGradient } from 'expo-linear-gradient';
 import { House, CalendarDays, ChartBar } from 'lucide-react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { HomeScreen, LogScreen, TimelineScreen, InsightsScreen } from './src/screens';
 import { usePoopHistory } from './src/hooks/usePoopHistory';
@@ -33,7 +34,7 @@ const HomeWrapper = ({
 };
 
 export default function App() {
-  const { history, isLoading, addEntry } = usePoopHistory();
+  const { history, isLoading, addEntry, deleteEntry } = usePoopHistory();
   const [showLogScreen, setShowLogScreen] = useState(false);
 
   const handleSaveEntry = async (type: BristolType, tags: string[]): Promise<boolean> => {
@@ -71,6 +72,7 @@ export default function App() {
   }
 
   return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
     <SafeAreaProvider>
       <StatusBar barStyle="light-content" />
       <NavigationContainer
@@ -126,7 +128,7 @@ export default function App() {
               ),
             }}
           >
-            {() => <TimelineScreen history={history} />}
+            {() => <TimelineScreen history={history} onDeleteEntry={deleteEntry} />}
           </Tab.Screen>
 
           <Tab.Screen
@@ -142,6 +144,7 @@ export default function App() {
         </Tab.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
 

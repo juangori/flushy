@@ -1,20 +1,25 @@
-import React from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ScrollView, 
+import React, { useRef } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
   SectionList,
+  Animated,
+  TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Swipeable } from 'react-native-gesture-handler';
+import { Trash2 } from 'lucide-react-native';
+import * as Haptics from 'expo-haptics';
 import { TimelineEntry } from '../components';
-import { DayData } from '../types';
-import { COLORS } from '../constants';
+import { DayData, LogEntry } from '../types';
+import { COLORS, BRISTOL_TYPES, getHealthColor } from '../constants';
 import { formatDate } from '../utils';
 
 interface TimelineScreenProps {
   history: DayData[];
+  onDeleteEntry?: (date: string, entryId: string) => Promise<boolean>;
 }
 
 // Health legend items
@@ -25,13 +30,64 @@ const LEGEND = [
   { label: 'Constipated', color: COLORS.constipated },
 ];
 
-export const TimelineScreen: React.FC<TimelineScreenProps> = ({ history }) => {
+const SwipeableEntry = ({
+  entry,
+  date,
+  onDelete
+}: {
+  entry: LogEntry;
+  date: string;
+  onDelete: (date: string, entryId: string) => void;
+}) => {
+  const swipeableRef = useRef<Swipeable>(null);
+
+  const handleDelete = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    swipeableRef.current?.close();
+    onDelete(date, entry.id);
+  };
+
+  const renderRightActions = (
+    progress: Animated.AnimatedInterpolation<number>,
+  ) => {
+    const translateX = progress.interpolate({
+      inputRange: [0, 1],
+      outputRange: [80, 0],
+    });
+
+    return (
+      <TouchableOpacity onPress={handleDelete} activeOpacity={0.6} style={styles.deleteWrapper}>
+        <Animated.View style={[styles.deleteAction, { transform: [{ translateX }] }]}>
+          <Trash2 size={20} color="#F87171" strokeWidth={2} />
+        </Animated.View>
+      </TouchableOpacity>
+    );
+  };
+
+  return (
+    <Swipeable
+      ref={swipeableRef}
+      renderRightActions={renderRightActions}
+      overshootRight={false}
+    >
+      <View style={styles.entryWrapper}>
+        <TimelineEntry entry={entry} />
+      </View>
+    </Swipeable>
+  );
+};
+
+export const TimelineScreen: React.FC<TimelineScreenProps> = ({ history, onDeleteEntry }) => {
   // Transform history for SectionList
   const sections = history.map(day => ({
     title: formatDate(day.date),
     data: day.entries,
     date: day.date,
   }));
+
+  const handleDelete = (date: string, entryId: string) => {
+    onDeleteEntry?.(date, entryId);
+  };
 
   return (
     <LinearGradient
@@ -72,16 +128,34 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ history }) => {
           <SectionList
             sections={sections}
             keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <View style={styles.entryWrapper}>
-                <TimelineEntry entry={item} />
-              </View>
+            renderItem={({ item, section }) => (
+              <SwipeableEntry
+                entry={item}
+                date={section.date}
+                onDelete={handleDelete}
+              />
             )}
-            renderSectionHeader={({ section: { title } }) => (
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>{title}</Text>
-              </View>
-            )}
+            renderSectionHeader={({ section: { title, data } }) => {
+              const avgType = data.reduce((sum: number, e: LogEntry) => sum + e.type, 0) / data.length;
+              const rounded = Math.round(avgType);
+              const bristolType = BRISTOL_TYPES[rounded - 1];
+              const healthColor = getHealthColor(bristolType?.health);
+              const healthLabel = bristolType?.health
+                ? bristolType.health.charAt(0).toUpperCase() + bristolType.health.slice(1)
+                : '';
+
+              return (
+                <View style={styles.sectionHeader}>
+                  <Text style={styles.sectionTitle}>{title}</Text>
+                  <View style={[styles.sectionBadge, { backgroundColor: `${healthColor}20` }]}>
+                    <View style={[styles.sectionBadgeDot, { backgroundColor: healthColor }]} />
+                    <Text style={[styles.sectionBadgeText, { color: healthColor }]}>
+                      {healthLabel}
+                    </Text>
+                  </View>
+                </View>
+              );
+            }}
             stickySectionHeadersEnabled={true}
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
@@ -144,14 +218,47 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.bgSecondary,
     paddingVertical: 8,
     paddingTop: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   sectionTitle: {
     color: COLORS.textSecondary,
     fontSize: 14,
     fontWeight: '600',
   },
+  sectionBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    borderRadius: 8,
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+  },
+  sectionBadgeDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  sectionBadgeText: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
   entryWrapper: {
     marginTop: 10,
+  },
+  deleteWrapper: {
+    marginTop: 10,
+    marginLeft: 10,
+    justifyContent: 'center',
+  },
+  deleteAction: {
+    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 64,
+    flex: 1,
+    borderRadius: 16,
   },
   emptyState: {
     flex: 1,

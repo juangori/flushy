@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { COLORS } from '../constants';
 
 interface StatCardProps {
@@ -7,21 +7,37 @@ interface StatCardProps {
   value: string | number;
   unit?: string;
   color?: string;
+  onPress?: () => void;
 }
 
-export const StatCard: React.FC<StatCardProps> = ({ 
-  label, 
-  value, 
+export const StatCard: React.FC<StatCardProps> = ({
+  label,
+  value,
   unit,
-  color = COLORS.textPrimary 
+  color = COLORS.textPrimary,
+  onPress,
 }) => {
-  return (
-    <View style={styles.container}>
+  const content = (
+    <>
       <Text style={styles.label}>{label}</Text>
       <View style={styles.valueRow}>
         <Text style={[styles.value, { color }]}>{value}</Text>
         {unit && <Text style={styles.unit}>{unit}</Text>}
       </View>
+    </>
+  );
+
+  if (onPress) {
+    return (
+      <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.7}>
+        {content}
+      </TouchableOpacity>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      {content}
     </View>
   );
 };

@@ -58,20 +58,22 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
           {/* Stats Row */}
           <View style={styles.statsRow}>
-            <StatCard 
-              label="Streak" 
-              value={stats.streak} 
-              unit="days" 
+            <StatCard
+              label="Streak"
+              value={stats.streak}
+              unit="days"
+              color={stats.streak >= 3 ? COLORS.healthy : stats.streak >= 1 ? COLORS.warning : COLORS.alert}
             />
-            <StatCard 
-              label="This Week" 
-              value={stats.weekCount} 
-              unit="logs" 
+            <StatCard
+              label="This Week"
+              value={stats.weekCount}
+              unit="logs"
+              onPress={onTimelinePress}
+              color={stats.weekCount >= 3 ? COLORS.healthy : stats.weekCount >= 1 ? COLORS.warning : COLORS.alert}
             />
             <StatCard
               label="Gut Score"
               value={stats.healthScore}
-              unit="/100"
               color={stats.healthScore >= 70 ? COLORS.healthy : stats.healthScore >= 40 ? COLORS.warning : COLORS.alert}
             />
           </View>
@@ -96,15 +98,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             ) : (
               <View style={styles.recentList}>
                 {history.slice(0, 3).map((day) => (
-                  <View key={day.date} style={styles.recentItem}>
+                  <TouchableOpacity key={day.date} style={styles.recentItem} onPress={onTimelinePress} activeOpacity={0.7}>
                     <View>
                       <Text style={styles.recentDate}>
                         {formatDate(day.date)}
                       </Text>
                       <View style={styles.recentTypes}>
                         {day.entries.map((entry, i) => (
-                          <View 
-                            key={i} 
+                          <View
+                            key={i}
                             style={[
                               styles.typeBadge,
                               { backgroundColor: getHealthColor(BRISTOL_TYPES[entry.type - 1].health) }
@@ -118,7 +120,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                     <Text style={styles.recentCount}>
                       {day.entries.length} {day.entries.length === 1 ? 'log' : 'logs'}
                     </Text>
-                  </View>
+                  </TouchableOpacity>
                 ))}
               </View>
             )}

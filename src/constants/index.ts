@@ -5,7 +5,7 @@ export const BRISTOL_TYPES: BristolType[] = [
   { type: 2, emoji: '🥜', name: 'Lumpy sausage', desc: 'Slightly hard', health: 'constipated' },
   { type: 3, emoji: '🌭', name: 'Cracked sausage', desc: 'Normal', health: 'healthy' },
   { type: 4, emoji: '🐍', name: 'Smooth snake', desc: 'Ideal', health: 'healthy' },
-  { type: 5, emoji: '☁️', name: 'Soft blobs', desc: 'Lacking fiber', health: 'warning' },
+  { type: 5, emoji: '☁️', name: 'Soft blobs', desc: 'Soft pieces', health: 'warning' },
   { type: 6, emoji: '🌊', name: 'Mushy', desc: 'Mild diarrhea', health: 'warning' },
   { type: 7, emoji: '💧', name: 'Liquid', desc: 'Diarrhea', health: 'alert' },
 ];

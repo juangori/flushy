@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { BristolType } from '../types';
 import { COLORS, getHealthColor } from '../constants';
+import { BristolIcon } from './BristolIcons';
 
 interface BristolSelectorProps {
   types: BristolType[];
@@ -36,7 +37,7 @@ export const BristolSelector: React.FC<BristolSelectorProps> = ({
             activeOpacity={0.7}
           >
             <View style={styles.emojiContainer}>
-              <Text style={styles.emoji}>{item.emoji}</Text>
+              <BristolIcon type={item.type} size={32} color={getHealthColor(item.health)} />
             </View>
             
             <View style={styles.textContainer}>

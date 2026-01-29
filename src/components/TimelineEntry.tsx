@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { LogEntry } from '../types';
 import { BRISTOL_TYPES, QUICK_TAGS, COLORS, getHealthColor } from '../constants';
+import { BristolIcon } from './BristolIcons';
 
 interface TimelineEntryProps {
   entry: LogEntry;
@@ -16,7 +17,7 @@ export const TimelineEntry: React.FC<TimelineEntryProps> = ({ entry }) => {
       { borderLeftColor: getHealthColor(bristolType.health) }
     ]}>
       <View style={styles.emojiContainer}>
-        <Text style={styles.emoji}>{bristolType.emoji}</Text>
+        <BristolIcon type={entry.type} size={28} color={getHealthColor(bristolType.health)} />
       </View>
       
       <View style={styles.content}>

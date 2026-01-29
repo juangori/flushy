@@ -10,6 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
+import { X } from 'lucide-react-native';
 import { BristolSelector, TagSelector, PrimaryButton } from '../components';
 import { BristolType } from '../types';
 import { COLORS, BRISTOL_TYPES, QUICK_TAGS } from '../constants';
@@ -86,14 +87,14 @@ export const LogScreen: React.FC<LogScreenProps> = ({
       <SafeAreaView style={styles.safeArea} edges={['top']}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity 
-            style={styles.backButton}
+          <View style={styles.headerSpacer} />
+          <Text style={styles.headerTitle}>Quick Log</Text>
+          <TouchableOpacity
+            style={styles.closeButton}
             onPress={onCancel}
           >
-            <Text style={styles.backText}>←</Text>
+            <X size={20} color={COLORS.textSecondary} strokeWidth={2} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Quick Log</Text>
-          <View style={styles.backButton} />
         </View>
 
         <ScrollView 
@@ -153,17 +154,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
   },
-  backButton: {
+  headerSpacer: {
+    width: 44,
+  },
+  closeButton: {
     width: 44,
     height: 44,
     backgroundColor: COLORS.surface,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  backText: {
-    color: COLORS.textPrimary,
-    fontSize: 20,
   },
   headerTitle: {
     color: COLORS.textPrimary,
