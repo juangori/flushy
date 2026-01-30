@@ -11,7 +11,9 @@
       "Bash(netstat:*)",
       "Bash(findstr:*)",
       "Bash(node -e:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(git -C \"c:\\\\Users\\\\juang\\\\Documents\\\\flushy\" log --oneline -15)",
+      "Bash(git -C \"c:\\\\Users\\\\juang\\\\Documents\\\\flushy\" show --stat HEAD)"
     ]
   }
 }

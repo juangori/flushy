@@ -18,18 +18,27 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.flushy.app",
-      "buildNumber": "1"
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSHealthShareUsageDescription": "Flushy does not access Apple Health data. All tracking is done within the app."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1a1a2e"
       },
-      "package": "com.flushy.app"
+      "package": "com.flushy.app",
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": []
+    "plugins": [],
+    "extra": {
+      "eas": {
+        "projectId": "YOUR_EAS_PROJECT_ID"
+      }
+    }
   }
 }
