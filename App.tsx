@@ -260,7 +260,7 @@ const AppContent: React.FC = () => {
                 ),
               }}
             >
-              {() => <InsightsScreen history={history} onTrackView={trackInsightsView} />}
+              {() => <InsightsScreen history={history} onTrackView={trackInsightsView} onLogPress={() => setShowLogScreen(true)} />}
             </Tab.Screen>
           </Tab.Navigator>
         </NavigationContainer>

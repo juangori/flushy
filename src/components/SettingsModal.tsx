@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,15 +8,18 @@ import {
   ScrollView,
   Image,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { X, Check, Moon, Sun, Leaf, Flower2, Circle, Shield, Heart, RotateCcw, CalendarDays } from 'lucide-react-native';
+import { X, Check, Moon, Sun, Leaf, Flower2, Circle, Shield, Heart, RotateCcw, CalendarDays, Download, Upload, HardDrive, Bell, ChevronUp, ChevronDown } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../context';
 import { THEME_LIST, ThemeId, ThemeIcon } from '../constants/themes';
 import { FONTS, ALL_STORAGE_KEYS } from '../constants';
 import { PRIVACY_STATEMENT, FULL_DISCLAIMER } from '../constants/wellnessTips';
+import { createBackup, restoreBackup, getLastBackupDate } from '../utils/backup';
+import { useReminders } from '../hooks/useReminders';
 
 interface SettingsModalProps {
   visible: boolean;
@@ -39,10 +42,97 @@ const ThemeIconComponent: React.FC<{ icon: ThemeIcon; size: number; color: strin
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose, onResetApp, onViewDigest }) => {
   const { themeId, colors, setTheme } = useTheme();
+  const [lastBackup, setLastBackup] = useState<string | null>(null);
+  const [backingUp, setBackingUp] = useState(false);
+  const [restoring, setRestoring] = useState(false);
+  const { settings: reminderSettings, toggleEnabled: toggleReminder, setTime: setReminderTime } = useReminders();
+
+  useEffect(() => {
+    if (visible) {
+      getLastBackupDate().then(setLastBackup);
+    }
+  }, [visible]);
 
   const handleThemeSelect = (newThemeId: ThemeId) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setTheme(newThemeId);
+  };
+
+  const handleToggleReminder = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const success = await toggleReminder();
+    if (success === false) {
+      Alert.alert(
+        'Notifications Disabled',
+        'Please enable notifications for Flushy in your device settings to use reminders.'
+      );
+    }
+  };
+
+  const adjustReminderHour = (delta: number) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const newHour = (reminderSettings.hour + delta + 24) % 24;
+    setReminderTime(newHour, reminderSettings.minute);
+  };
+
+  const adjustReminderMinute = (delta: number) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const newMinute = (reminderSettings.minute + delta + 60) % 60;
+    setReminderTime(reminderSettings.hour, newMinute);
+  };
+
+  const formatTime12h = (hour: number, minute: number): string => {
+    const period = hour >= 12 ? 'PM' : 'AM';
+    const h = hour % 12 || 12;
+    const m = minute.toString().padStart(2, '0');
+    return `${h}:${m} ${period}`;
+  };
+
+  const handleBackup = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setBackingUp(true);
+    const success = await createBackup();
+    setBackingUp(false);
+    if (success) {
+      setLastBackup(new Date().toISOString());
+    } else {
+      Alert.alert('Backup Failed', 'Could not create backup. Please try again.');
+    }
+  };
+
+  const handleRestore = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    Alert.alert(
+      'Restore Backup',
+      'This will replace your current data with the backup file. Your current data will be overwritten.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Choose File',
+          onPress: async () => {
+            setRestoring(true);
+            const result = await restoreBackup();
+            setRestoring(false);
+            if (result.success) {
+              Alert.alert('Restore Complete', result.message + '\n\nPlease restart the app to see your restored data.');
+            } else if (result.message !== 'No file selected.') {
+              Alert.alert('Restore Failed', result.message);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const formatBackupDate = (iso: string): string => {
+    const date = new Date(iso);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 30) return `${diffDays} days ago`;
+    return date.toLocaleDateString();
   };
 
   const handleResetApp = () => {
@@ -200,6 +290,77 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose, 
               </TouchableOpacity>
             </View>
 
+            {/* Reminders Section */}
+            <View style={styles.section}>
+              <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>Reminders</Text>
+
+              <TouchableOpacity
+                style={[styles.actionButton, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                onPress={handleToggleReminder}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.actionIconContainer, { backgroundColor: reminderSettings.enabled ? `${colors.healthy}20` : `${colors.textMuted}20` }]}>
+                  <Bell size={18} color={reminderSettings.enabled ? colors.healthy : colors.textMuted} />
+                </View>
+                <View style={styles.actionTextContainer}>
+                  <Text style={[styles.actionTitle, { color: colors.textPrimary }]}>Daily Reminder</Text>
+                  <Text style={[styles.actionDesc, { color: colors.textMuted }]}>
+                    {reminderSettings.enabled
+                      ? `Active · ${formatTime12h(reminderSettings.hour, reminderSettings.minute)}`
+                      : 'Get a daily nudge to log'}
+                  </Text>
+                </View>
+                <View style={[styles.toggleTrack, reminderSettings.enabled && { backgroundColor: colors.healthy }]}>
+                  <View style={[styles.toggleThumb, reminderSettings.enabled && styles.toggleThumbActive]} />
+                </View>
+              </TouchableOpacity>
+
+              {reminderSettings.enabled && (
+                <View style={[styles.timePickerContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                  <Text style={[styles.timePickerLabel, { color: colors.textMuted }]}>Reminder time</Text>
+                  <View style={styles.timePicker}>
+                    {/* Hour */}
+                    <View style={styles.timeColumn}>
+                      <TouchableOpacity onPress={() => adjustReminderHour(1)} style={[styles.timeArrow, { backgroundColor: colors.surfaceHover }]}>
+                        <ChevronUp size={16} color={colors.textSecondary} strokeWidth={2} />
+                      </TouchableOpacity>
+                      <Text style={[styles.timeValue, { color: colors.textPrimary }]}>
+                        {(reminderSettings.hour % 12 || 12).toString().padStart(2, '0')}
+                      </Text>
+                      <TouchableOpacity onPress={() => adjustReminderHour(-1)} style={[styles.timeArrow, { backgroundColor: colors.surfaceHover }]}>
+                        <ChevronDown size={16} color={colors.textSecondary} strokeWidth={2} />
+                      </TouchableOpacity>
+                    </View>
+
+                    <Text style={[styles.timeColon, { color: colors.textMuted }]}>:</Text>
+
+                    {/* Minute */}
+                    <View style={styles.timeColumn}>
+                      <TouchableOpacity onPress={() => adjustReminderMinute(5)} style={[styles.timeArrow, { backgroundColor: colors.surfaceHover }]}>
+                        <ChevronUp size={16} color={colors.textSecondary} strokeWidth={2} />
+                      </TouchableOpacity>
+                      <Text style={[styles.timeValue, { color: colors.textPrimary }]}>
+                        {reminderSettings.minute.toString().padStart(2, '0')}
+                      </Text>
+                      <TouchableOpacity onPress={() => adjustReminderMinute(-5)} style={[styles.timeArrow, { backgroundColor: colors.surfaceHover }]}>
+                        <ChevronDown size={16} color={colors.textSecondary} strokeWidth={2} />
+                      </TouchableOpacity>
+                    </View>
+
+                    {/* AM/PM */}
+                    <TouchableOpacity
+                      onPress={() => adjustReminderHour(reminderSettings.hour >= 12 ? -12 : 12)}
+                      style={[styles.ampmButton, { backgroundColor: colors.surfaceHover }]}
+                    >
+                      <Text style={[styles.ampmText, { color: colors.primary }]}>
+                        {reminderSettings.hour >= 12 ? 'PM' : 'AM'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
+            </View>
+
             {/* Privacy Section */}
             <View style={styles.section}>
               <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>Privacy</Text>
@@ -253,9 +414,67 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose, 
               </View>
             </View>
 
-            {/* Reset Section */}
+            {/* Backup & Restore Section */}
             <View style={styles.section}>
               <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>Data</Text>
+
+              {/* Last backup info */}
+              {lastBackup && (
+                <View style={[styles.backupInfo, { backgroundColor: colors.surface }]}>
+                  <HardDrive size={14} color={colors.textMuted} strokeWidth={2} />
+                  <Text style={[styles.backupInfoText, { color: colors.textMuted }]}>
+                    Last backup: {formatBackupDate(lastBackup)}
+                  </Text>
+                </View>
+              )}
+
+              <TouchableOpacity
+                style={[styles.actionButton, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                onPress={handleBackup}
+                activeOpacity={0.7}
+                disabled={backingUp}
+              >
+                <View style={[styles.actionIconContainer, { backgroundColor: `${colors.healthy}20` }]}>
+                  {backingUp ? (
+                    <ActivityIndicator size="small" color={colors.healthy} />
+                  ) : (
+                    <Upload size={18} color={colors.healthy} />
+                  )}
+                </View>
+                <View style={styles.actionTextContainer}>
+                  <Text style={[styles.actionTitle, { color: colors.textPrimary }]}>Create Backup</Text>
+                  <Text style={[styles.actionDesc, { color: colors.textMuted }]}>
+                    Export your data as a JSON file
+                  </Text>
+                </View>
+              </TouchableOpacity>
+
+              <View style={{ height: 10 }} />
+
+              <TouchableOpacity
+                style={[styles.actionButton, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                onPress={handleRestore}
+                activeOpacity={0.7}
+                disabled={restoring}
+              >
+                <View style={[styles.actionIconContainer, { backgroundColor: `${colors.primary}20` }]}>
+                  {restoring ? (
+                    <ActivityIndicator size="small" color={colors.primary} />
+                  ) : (
+                    <Download size={18} color={colors.primary} />
+                  )}
+                </View>
+                <View style={styles.actionTextContainer}>
+                  <Text style={[styles.actionTitle, { color: colors.textPrimary }]}>Restore Backup</Text>
+                  <Text style={[styles.actionDesc, { color: colors.textMuted }]}>
+                    Import data from a backup file
+                  </Text>
+                </View>
+              </TouchableOpacity>
+
+              <View style={{ height: 16 }} />
+
+              {/* Reset button */}
               <TouchableOpacity
                 style={[styles.resetButton, { backgroundColor: `${colors.alert}15`, borderColor: `${colors.alert}30` }]}
                 onPress={handleResetApp}
@@ -496,6 +715,19 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.regular,
     marginTop: 2,
   },
+  backupInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    marginBottom: 12,
+  },
+  backupInfoText: {
+    fontSize: 12,
+    fontFamily: FONTS.regular,
+  },
   resetButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -522,5 +754,73 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: FONTS.regular,
     marginTop: 2,
+  },
+  toggleTrack: {
+    width: 44,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: 'rgba(128, 128, 128, 0.3)',
+    justifyContent: 'center',
+    paddingHorizontal: 2,
+  },
+  toggleThumb: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: '#FFFFFF',
+  },
+  toggleThumbActive: {
+    alignSelf: 'flex-end',
+  },
+  timePickerContainer: {
+    marginTop: 10,
+    padding: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+  },
+  timePickerLabel: {
+    fontSize: 12,
+    fontFamily: FONTS.semiBold,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 12,
+  },
+  timePicker: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  timeColumn: {
+    alignItems: 'center',
+    gap: 6,
+  },
+  timeArrow: {
+    width: 36,
+    height: 28,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  timeValue: {
+    fontSize: 28,
+    fontFamily: FONTS.bold,
+    minWidth: 44,
+    textAlign: 'center',
+  },
+  timeColon: {
+    fontSize: 28,
+    fontFamily: FONTS.bold,
+    marginBottom: 2,
+  },
+  ampmButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    marginLeft: 4,
+  },
+  ampmText: {
+    fontSize: 16,
+    fontFamily: FONTS.semiBold,
   },
 });

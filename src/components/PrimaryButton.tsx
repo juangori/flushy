@@ -39,13 +39,13 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
   };
 
   const getGradient = (): [string, string] => {
-    if (disabled) return ['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)'];
+    if (disabled) return [colors.surface, colors.surfaceHover];
 
     switch (variant) {
       case 'success':
         return ['#4ADE80', '#22C55E'];
       case 'secondary':
-        return ['rgba(255,255,255,0.15)', 'rgba(255,255,255,0.1)'];
+        return [colors.surface, colors.surfaceHover];
       default:
         return [colors.primary, colors.primaryLight];
     }
@@ -70,13 +70,13 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
         ]}
       >
         {loading ? (
-          <ActivityIndicator color={colors.textPrimary} />
+          <ActivityIndicator color={variant === 'secondary' || disabled ? colors.textPrimary : colors.buttonText} />
         ) : (
           <>
             {icon && (typeof icon === 'string' ? <Text style={styles.icon}>{icon}</Text> : icon)}
             <Text style={[
               styles.text,
-              { color: colors.textPrimary },
+              { color: variant === 'secondary' ? colors.textPrimary : colors.buttonText },
               disabled && { color: colors.textMuted },
             ]}>
               {title}

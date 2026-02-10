@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,12 +9,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Plus, Settings, NotebookPen, Trophy } from 'lucide-react-native';
+import { Plus, Settings, NotebookPen, Trophy, HardDrive, X } from 'lucide-react-native';
 import { StatCard, PrimaryButton, AnimatedBristolIcon, SettingsModal, WellnessTipCard } from '../components';
 import { useWellnessTip } from '../hooks/useWellnessTip';
 import { DayData } from '../types';
 import { BRISTOL_TYPES, getHealthColor, getStoolColorById, FONTS } from '../constants';
 import { formatDate, calculateStats } from '../utils';
+import { shouldShowBackupReminder } from '../utils/backup';
 import { useTheme, useUserProfile } from '../context';
 
 interface HomeScreenProps {
@@ -39,7 +40,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const { colors } = useTheme();
   const { profile } = useUserProfile();
   const [settingsVisible, setSettingsVisible] = useState(false);
+  const [showBackupReminder, setShowBackupReminder] = useState(false);
   const stats = calculateStats(history);
+
+  useEffect(() => {
+    shouldShowBackupReminder().then(setShowBackupReminder);
+  }, []);
 
   // Filter history to only last 7 days for Recent section
   const recentHistory = React.useMemo(() => {
@@ -158,6 +164,26 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             />
           )}
 
+          {/* Backup Reminder */}
+          {showBackupReminder && (
+            <View style={[styles.backupBanner, { backgroundColor: `${colors.warning}15`, borderColor: `${colors.warning}30` }]}>
+              <View style={styles.backupBannerContent}>
+                <HardDrive size={18} color={colors.warning} strokeWidth={2} />
+                <View style={styles.backupBannerText}>
+                  <Text style={[styles.backupBannerTitle, { color: colors.textPrimary }]}>
+                    Back up your data
+                  </Text>
+                  <Text style={[styles.backupBannerDesc, { color: colors.textMuted }]}>
+                    Protect your logs. Go to Settings to create a backup.
+                  </Text>
+                </View>
+              </View>
+              <TouchableOpacity onPress={() => setShowBackupReminder(false)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                <X size={16} color={colors.textMuted} strokeWidth={2} />
+              </TouchableOpacity>
+            </View>
+          )}
+
           {/* Recent Section */}
           <View style={styles.recentSection}>
             <View style={styles.recentHeader}>
@@ -231,7 +257,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         <View style={styles.buttonContainer}>
           <PrimaryButton
             title="Log Now"
-            icon={<Plus size={22} color={colors.textPrimary} strokeWidth={2.5} />}
+            icon={<Plus size={22} color={colors.buttonText} strokeWidth={2.5} />}
             onPress={onLogPress}
             variant="primary"
           />
@@ -371,11 +397,38 @@ const styles = StyleSheet.create({
     height: 14,
     borderRadius: 7,
     borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: 'rgba(128, 128, 128, 0.3)',
   },
   recentCount: {
     fontSize: 13,
     fontFamily: FONTS.regular,
+  },
+  backupBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+    marginBottom: 20,
+  },
+  backupBannerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  backupBannerText: {
+    flex: 1,
+  },
+  backupBannerTitle: {
+    fontSize: 14,
+    fontFamily: FONTS.semiBold,
+  },
+  backupBannerDesc: {
+    fontSize: 12,
+    fontFamily: FONTS.regular,
+    marginTop: 2,
   },
   emptyState: {
     alignItems: 'center',

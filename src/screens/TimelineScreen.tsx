@@ -1,13 +1,13 @@
-import React, { useRef, useState, useMemo } from 'react';
+import React, { useRef, useState, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   Animated,
   TouchableOpacity,
-  ScrollView,
   Modal,
   Pressable,
+  ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -266,8 +266,8 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ history, onDelet
                 onPress={handleAddLog}
                 activeOpacity={0.8}
               >
-                <Plus size={20} color={colors.textPrimary} strokeWidth={2.5} />
-                <Text style={[styles.addLogButtonText, { color: colors.textPrimary }]}>
+                <Plus size={20} color={colors.buttonText} strokeWidth={2.5} />
+                <Text style={[styles.addLogButtonText, { color: colors.buttonText }]}>
                   Add Log for {formatDate(selectedDate)}
                 </Text>
               </TouchableOpacity>
@@ -590,7 +590,7 @@ const styles = StyleSheet.create({
     height: 28,
     borderRadius: 14,
     borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: 'rgba(128, 128, 128, 0.3)',
   },
   modalColorInfo: {
     flex: 1,

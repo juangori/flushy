@@ -22,6 +22,9 @@ export interface ThemeColors {
   textSecondary: string;
   textMuted: string;
 
+  // Button text (always readable on primary/success gradients)
+  buttonText: string;
+
   // Surface colors
   surface: string;
   surfaceHover: string;
@@ -57,6 +60,7 @@ const darkTheme: Theme = {
     textPrimary: '#FFFFFF',
     textSecondary: 'rgba(255, 255, 255, 0.7)',
     textMuted: 'rgba(255, 255, 255, 0.5)',
+    buttonText: '#FFFFFF',
     surface: 'rgba(255, 255, 255, 0.05)',
     surfaceHover: 'rgba(255, 255, 255, 0.08)',
     border: 'rgba(255, 255, 255, 0.08)',
@@ -83,6 +87,7 @@ const lightTheme: Theme = {
     textPrimary: '#1E293B',
     textSecondary: 'rgba(30, 41, 59, 0.7)',
     textMuted: 'rgba(30, 41, 59, 0.5)',
+    buttonText: '#FFFFFF',
     surface: 'rgba(0, 0, 0, 0.03)',
     surfaceHover: 'rgba(0, 0, 0, 0.05)',
     border: 'rgba(0, 0, 0, 0.08)',
@@ -109,6 +114,7 @@ const natureTheme: Theme = {
     textPrimary: '#ECFDF5',
     textSecondary: 'rgba(236, 253, 245, 0.7)',
     textMuted: 'rgba(236, 253, 245, 0.5)',
+    buttonText: '#FFFFFF',
     surface: 'rgba(74, 222, 128, 0.08)',
     surfaceHover: 'rgba(74, 222, 128, 0.12)',
     border: 'rgba(74, 222, 128, 0.1)',
@@ -135,6 +141,7 @@ const blushTheme: Theme = {
     textPrimary: '#831843',
     textSecondary: 'rgba(131, 24, 67, 0.7)',
     textMuted: 'rgba(131, 24, 67, 0.5)',
+    buttonText: '#FFFFFF',
     surface: 'rgba(236, 72, 153, 0.08)',
     surfaceHover: 'rgba(236, 72, 153, 0.12)',
     border: 'rgba(236, 72, 153, 0.15)',
@@ -161,6 +168,7 @@ const monoTheme: Theme = {
     textPrimary: '#FAFAFA',
     textSecondary: 'rgba(250, 250, 250, 0.7)',
     textMuted: 'rgba(250, 250, 250, 0.45)',
+    buttonText: '#FFFFFF',
     surface: 'rgba(255, 255, 255, 0.05)',
     surfaceHover: 'rgba(255, 255, 255, 0.08)',
     border: 'rgba(255, 255, 255, 0.1)',

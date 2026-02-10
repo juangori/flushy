@@ -10,6 +10,8 @@ export const STORAGE_KEYS = {
   APP_RATING: '@flushy_app_rating',
   WEEKLY_DIGEST: '@flushy_weekly_digest',
   ACHIEVEMENTS: '@flushy_achievements',
+  LAST_BACKUP: '@flushy_last_backup',
+  NOTIFICATION_SETTINGS: '@flushy_notification_settings',
 } as const;
 
 // Array of all keys for bulk operations (like reset)

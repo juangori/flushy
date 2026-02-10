@@ -11,7 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { exportToPDF } from '../utils/pdfExport';
-import { Download, ChevronLeft, ChevronRight, Calendar, BarChart3, HeartPulse, Heart, HeartCrack, HeartOff, Trophy, Lightbulb } from 'lucide-react-native';
+import { Download, ChevronLeft, ChevronRight, Calendar, BarChart3, HeartPulse, Heart, HeartCrack, HeartOff, Trophy, Lightbulb, Plus } from 'lucide-react-native';
 import { DayData } from '../types';
 import { QUICK_TAGS, BRISTOL_TYPES, getHealthColor, getStoolColorHealthColor, FONTS } from '../constants';
 import { calculateStats, getTypeDistribution, getTagCorrelations, getColorDistribution } from '../utils';
@@ -30,9 +30,10 @@ const MONTHS = [
 interface InsightsScreenProps {
   history: DayData[];
   onTrackView?: () => void;
+  onLogPress?: () => void;
 }
 
-export const InsightsScreen: React.FC<InsightsScreenProps> = ({ history, onTrackView }) => {
+export const InsightsScreen: React.FC<InsightsScreenProps> = ({ history, onTrackView, onLogPress }) => {
   const { colors } = useTheme();
   const [exporting, setExporting] = useState(false);
   const [filterType, setFilterType] = useState<FilterType>('all');
@@ -238,6 +239,25 @@ export const InsightsScreen: React.FC<InsightsScreenProps> = ({ history, onTrack
                   ? 'Try selecting a different month'
                   : 'Start logging to see insights'}
               </Text>
+              {filterType === 'month' ? (
+                <TouchableOpacity
+                  style={[styles.emptyCta, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                  onPress={toggleFilter}
+                  activeOpacity={0.7}
+                >
+                  <Calendar size={18} color={colors.primary} strokeWidth={2} />
+                  <Text style={[styles.emptyCtaText, { color: colors.primary }]}>View All Time</Text>
+                </TouchableOpacity>
+              ) : onLogPress ? (
+                <TouchableOpacity
+                  style={[styles.emptyCta, { backgroundColor: colors.primary }]}
+                  onPress={onLogPress}
+                  activeOpacity={0.7}
+                >
+                  <Plus size={18} color={colors.buttonText} strokeWidth={2.5} />
+                  <Text style={[styles.emptyCtaText, { color: colors.buttonText }]}>Log Now</Text>
+                </TouchableOpacity>
+              ) : null}
             </View>
           ) : (
             <>
@@ -779,6 +799,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 4,
     fontFamily: FONTS.regular,
+  },
+  emptyCta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  emptyCtaText: {
+    fontSize: 15,
+    fontFamily: FONTS.semiBold,
   },
   achievementsHeader: {
     flexDirection: 'row',
