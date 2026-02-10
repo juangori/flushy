@@ -1,12 +1,14 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { COLORS } from '../constants';
+import { useTheme } from '../context';
+import { FONTS } from '../constants';
 
 interface StatCardProps {
   label: string;
   value: string | number;
   unit?: string;
   color?: string;
+  hint?: string;
   onPress?: () => void;
 }
 
@@ -14,29 +16,34 @@ export const StatCard: React.FC<StatCardProps> = ({
   label,
   value,
   unit,
-  color = COLORS.textPrimary,
+  color,
+  hint,
   onPress,
 }) => {
+  const { colors } = useTheme();
+  const valueColor = color || colors.textPrimary;
+
   const content = (
     <>
-      <Text style={styles.label}>{label}</Text>
+      <Text style={[styles.label, { color: colors.textMuted }]}>{label}</Text>
       <View style={styles.valueRow}>
-        <Text style={[styles.value, { color }]}>{value}</Text>
-        {unit && <Text style={styles.unit}>{unit}</Text>}
+        <Text style={[styles.value, { color: valueColor }]}>{value}</Text>
+        {unit && <Text style={[styles.unit, { color: colors.textPrimary }]}>{unit}</Text>}
       </View>
+      {hint && <Text style={[styles.hint, { color: colors.textMuted }]}>{hint}</Text>}
     </>
   );
 
   if (onPress) {
     return (
-      <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.7}>
+      <TouchableOpacity style={[styles.container, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={onPress} activeOpacity={0.7}>
         {content}
       </TouchableOpacity>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.surface, borderColor: colors.border }]}>
       {content}
     </View>
   );
@@ -45,17 +52,15 @@ export const StatCard: React.FC<StatCardProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.surface,
     borderRadius: 20,
     padding: 16,
     borderWidth: 1,
-    borderColor: COLORS.border,
   },
   label: {
-    color: COLORS.textMuted,
     fontSize: 11,
     textTransform: 'uppercase',
     letterSpacing: 1,
+    fontFamily: FONTS.medium,
   },
   valueRow: {
     flexDirection: 'row',
@@ -64,12 +69,17 @@ const styles = StyleSheet.create({
   },
   value: {
     fontSize: 28,
-    fontWeight: '700',
+    fontFamily: FONTS.bold,
     letterSpacing: -1,
   },
   unit: {
     fontSize: 14,
-    color: COLORS.textPrimary,
     marginLeft: 4,
+    fontFamily: FONTS.regular,
+  },
+  hint: {
+    fontSize: 9,
+    fontFamily: FONTS.regular,
+    marginTop: 2,
   },
 });

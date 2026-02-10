@@ -1,26 +1,34 @@
-import { DayData, Stats, LogEntry } from '../types';
+import { DayData, Stats, LogEntry, QuickTag } from '../types';
 import { BRISTOL_TYPES, STOOL_COLORS } from '../constants';
+
+export { detectPatterns, getPatternSummary } from './patternDetection';
 
 export const generateId = (): string => {
   return Date.now().toString(36) + Math.random().toString(36).substr(2);
 };
 
 export const formatDate = (dateStr: string): string => {
-  const date = new Date(dateStr);
+  // Parse date as local time to avoid timezone issues
+  const [year, month, day] = dateStr.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+
   const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   const yesterday = new Date(today);
   yesterday.setDate(yesterday.getDate() - 1);
-  
-  const todayStr = today.toISOString().split('T')[0];
-  const yesterdayStr = yesterday.toISOString().split('T')[0];
-  
-  if (dateStr === todayStr) return 'Today';
-  if (dateStr === yesterdayStr) return 'Yesterday';
-  
-  return date.toLocaleDateString('en-US', { 
-    weekday: 'short', 
-    month: 'short', 
-    day: 'numeric' 
+
+  // Compare dates properly
+  const dateOnly = new Date(year, month - 1, day);
+  dateOnly.setHours(0, 0, 0, 0);
+
+  if (dateOnly.getTime() === today.getTime()) return 'Today';
+  if (dateOnly.getTime() === yesterday.getTime()) return 'Yesterday';
+
+  return date.toLocaleDateString('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric'
   });
 };
 
@@ -57,10 +65,13 @@ export const calculateStats = (history: DayData[]): Stats => {
   // Calculate week stats
   const weekAgo = new Date(today);
   weekAgo.setDate(weekAgo.getDate() - 7);
-  
+  weekAgo.setHours(0, 0, 0, 0);
+
   const weekEntries = history
     .filter(d => {
-      const date = new Date(d.date);
+      // Parse date as local time to avoid timezone issues
+      const [year, month, day] = d.date.split('-').map(Number);
+      const date = new Date(year, month - 1, day);
       return date >= weekAgo;
     })
     .flatMap(d => d.entries);
@@ -71,9 +82,10 @@ export const calculateStats = (history: DayData[]): Stats => {
   
   // Health score (0-100, only type 4 = 100, drops off from there)
   // Distance from 4: 0→100, 1→70, 2→40, 3→10
-  // null when no entries exist
+  // null when fewer than 3 entries (not enough data for meaningful score)
+  const MIN_ENTRIES_FOR_SCORE = 3;
   let healthScore: number | null = null;
-  if (weekEntries.length > 0) {
+  if (weekEntries.length >= MIN_ENTRIES_FOR_SCORE) {
     const avgTypeNum = parseFloat(avgType);
     const distance = Math.abs(avgTypeNum - 4);
     healthScore = Math.max(0, Math.min(100, Math.round(100 - (distance * 30))));
@@ -96,7 +108,7 @@ export const getTypeDistribution = (history: DayData[]) => {
   }));
 };
 
-export const getTagCorrelations = (history: DayData[], quickTags: { id: string; emoji: string; label: string }[]) => {
+export const getTagCorrelations = (history: DayData[], quickTags: QuickTag[]) => {
   const allEntries = history.flatMap(d => d.entries);
   
   return quickTags

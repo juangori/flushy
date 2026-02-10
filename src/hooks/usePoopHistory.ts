@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { DayData, LogEntry, BristolType } from '../types';
-import { STORAGE_KEY, LEGACY_STORAGE_KEY } from '../constants';
+import { STORAGE_KEYS, LEGACY_STORAGE_KEY } from '../constants';
 import { generateId, formatTime, getTodayString } from '../utils';
 
 export const usePoopHistory = () => {
@@ -15,13 +15,13 @@ export const usePoopHistory = () => {
 
   const loadHistory = async () => {
     try {
-      let stored = await AsyncStorage.getItem(STORAGE_KEY);
+      let stored = await AsyncStorage.getItem(STORAGE_KEYS.HISTORY);
       // Migrate from legacy key if needed
       if (!stored) {
         const legacy = await AsyncStorage.getItem(LEGACY_STORAGE_KEY);
         if (legacy) {
           stored = legacy;
-          await AsyncStorage.setItem(STORAGE_KEY, legacy);
+          await AsyncStorage.setItem(STORAGE_KEYS.HISTORY, legacy);
           await AsyncStorage.removeItem(LEGACY_STORAGE_KEY);
         }
       }
@@ -37,7 +37,7 @@ export const usePoopHistory = () => {
 
   const saveHistory = async (newHistory: DayData[]) => {
     try {
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newHistory));
+      await AsyncStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(newHistory));
     } catch (error) {
       console.error('Error saving history:', error);
     }
@@ -47,30 +47,45 @@ export const usePoopHistory = () => {
     type: BristolType,
     tags: string[] = [],
     notes?: string,
-    color?: string
+    color?: string,
+    forDate?: string, // Optional: YYYY-MM-DD format for past entries
+    forTime?: string  // Optional: HH:MM format for past entries (e.g., "08:30")
   ): Promise<boolean> => {
-    const today = getTodayString();
+    // Use provided date or today
+    const targetDate = forDate || getTodayString();
+
+    // For past dates, use provided time or default to noon
+    // For today, use current time
+    const isToday = targetDate === getTodayString();
+    let entryTime: Date;
+    if (isToday) {
+      entryTime = new Date();
+    } else if (forTime) {
+      entryTime = new Date(`${targetDate}T${forTime}:00`);
+    } else {
+      entryTime = new Date(`${targetDate}T12:00:00`);
+    }
 
     const newEntry: LogEntry = {
       id: generateId(),
       type: type.type,
       color,
-      time: formatTime(),
+      time: formatTime(entryTime),
       tags,
       notes,
-      createdAt: Date.now(),
+      createdAt: entryTime.getTime(),
     };
 
     const newHistory = [...history];
-    const todayIndex = newHistory.findIndex(d => d.date === today);
+    const dateIndex = newHistory.findIndex(d => d.date === targetDate);
 
-    if (todayIndex >= 0) {
-      newHistory[todayIndex] = {
-        ...newHistory[todayIndex],
-        entries: [...newHistory[todayIndex].entries, newEntry],
+    if (dateIndex >= 0) {
+      newHistory[dateIndex] = {
+        ...newHistory[dateIndex],
+        entries: [...newHistory[dateIndex].entries, newEntry],
       };
     } else {
-      newHistory.unshift({ date: today, entries: [newEntry] });
+      newHistory.push({ date: targetDate, entries: [newEntry] });
     }
 
     // Sort by date descending
@@ -78,7 +93,7 @@ export const usePoopHistory = () => {
 
     setHistory(newHistory);
     await saveHistory(newHistory);
-    
+
     return true;
   }, [history]);
 
@@ -101,7 +116,7 @@ export const usePoopHistory = () => {
 
   const clearAllData = useCallback(async (): Promise<boolean> => {
     try {
-      await AsyncStorage.removeItem(STORAGE_KEY);
+      await AsyncStorage.removeItem(STORAGE_KEYS.HISTORY);
       setHistory([]);
       return true;
     } catch (error) {

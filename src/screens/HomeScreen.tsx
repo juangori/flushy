@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,59 +6,123 @@ import {
   ScrollView,
   TouchableOpacity,
   StatusBar,
-  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Plus } from 'lucide-react-native';
-import { StatCard, PrimaryButton } from '../components';
-import { DayData, Stats } from '../types';
-import { COLORS, BRISTOL_TYPES, getHealthColor, getStoolColorById } from '../constants';
+import { Plus, Settings, NotebookPen, Trophy } from 'lucide-react-native';
+import { StatCard, PrimaryButton, AnimatedBristolIcon, SettingsModal, WellnessTipCard } from '../components';
+import { useWellnessTip } from '../hooks/useWellnessTip';
+import { DayData } from '../types';
+import { BRISTOL_TYPES, getHealthColor, getStoolColorById, FONTS } from '../constants';
 import { formatDate, calculateStats } from '../utils';
+import { useTheme, useUserProfile } from '../context';
 
 interface HomeScreenProps {
   history: DayData[];
   onLogPress: () => void;
   onTimelinePress: () => void;
+  onResetApp?: () => Promise<void>;
+  onViewDigest?: () => void;
+  onAchievementsPress?: () => void;
+  hasNewAchievements?: boolean;
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({
   history,
   onLogPress,
   onTimelinePress,
+  onResetApp,
+  onViewDigest,
+  onAchievementsPress,
+  hasNewAchievements = false,
 }) => {
+  const { colors } = useTheme();
+  const { profile } = useUserProfile();
+  const [settingsVisible, setSettingsVisible] = useState(false);
   const stats = calculateStats(history);
+
+  // Filter history to only last 7 days for Recent section
+  const recentHistory = React.useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const sixDaysAgo = new Date(today);
+    sixDaysAgo.setDate(sixDaysAgo.getDate() - 6); // 6 days back + today = 7 days
+
+    return history.filter((day) => {
+      const [year, month, dayNum] = day.date.split('-').map(Number);
+      const date = new Date(year, month - 1, dayNum);
+      date.setHours(0, 0, 0, 0);
+      return date >= sixDaysAgo && date <= today;
+    }).map((day) => ({
+      ...day,
+      // Sort entries by time (createdAt) ascending within each day
+      entries: [...day.entries].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)),
+    }));
+  }, [history]);
+
+  // Flatten history into LogEntry[] for wellness tips
+  const allEntries = React.useMemo(
+    () => history.flatMap((day) => day.entries),
+    [history]
+  );
+
+  const {
+    currentTip,
+    dismissTip,
+    snoozeTip,
+    markHelpful,
+  } = useWellnessTip(allEntries, profile);
   const today = new Date();
-  const dateString = today.toLocaleDateString('en-US', { 
-    weekday: 'long', 
-    month: 'short', 
-    day: 'numeric' 
+  const dateString = today.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'short',
+    day: 'numeric'
   });
 
   return (
     <LinearGradient
-      colors={[COLORS.bgPrimary, COLORS.bgSecondary, COLORS.bgTertiary]}
+      colors={[colors.bgPrimary, colors.bgSecondary, colors.bgTertiary]}
       style={styles.container}
       start={{ x: 0.3, y: 0 }}
       end={{ x: 0.7, y: 1 }}
     >
-      <StatusBar barStyle="light-content" />
+      <StatusBar barStyle={colors.bgPrimary === '#FFFFFF' || colors.bgPrimary === '#FDF2F8' ? 'dark-content' : 'light-content'} />
       <SafeAreaView style={styles.safeArea} edges={['top']}>
         {/* Ambient glow */}
-        <View style={styles.ambientGlow} />
-        
-        <ScrollView 
+        <View style={[styles.ambientGlow, { backgroundColor: `${colors.primary}15` }]} />
+
+        <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.dateText}>{dateString}</Text>
-            <View style={styles.titleRow}>
-              <Text style={styles.title}>How's it going? </Text>
-              <Image source={require('../../assets/flushy-emoji.png')} style={styles.titleEmoji} />
+            <View style={styles.headerTop}>
+              <Text style={[styles.dateText, { color: colors.textMuted }]}>{dateString}</Text>
+              <View style={styles.headerButtons}>
+                {onAchievementsPress && (
+                  <TouchableOpacity
+                    onPress={onAchievementsPress}
+                    style={[styles.headerButton, { backgroundColor: colors.surface }]}
+                    activeOpacity={0.7}
+                  >
+                    <Trophy size={20} color={colors.textSecondary} strokeWidth={2} />
+                    {hasNewAchievements && (
+                      <View style={[styles.newBadge, { backgroundColor: colors.primary }]} />
+                    )}
+                  </TouchableOpacity>
+                )}
+                <TouchableOpacity
+                  onPress={() => setSettingsVisible(true)}
+                  style={[styles.headerButton, { backgroundColor: colors.surface }]}
+                  activeOpacity={0.7}
+                >
+                  <Settings size={20} color={colors.textSecondary} strokeWidth={2} />
+                </TouchableOpacity>
+              </View>
             </View>
+            <Text style={[styles.title, { color: colors.textPrimary }]}>How's it going?</Text>
           </View>
 
           {/* Stats Row */}
@@ -67,69 +131,93 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               label="Streak"
               value={stats.streak}
               unit="days"
-              color={stats.streak >= 3 ? COLORS.healthy : stats.streak >= 1 ? COLORS.warning : COLORS.alert}
+              color={stats.streak >= 3 ? colors.healthy : stats.streak >= 1 ? colors.warning : colors.alert}
             />
             <StatCard
               label="This Week"
               value={stats.weekCount}
               unit="logs"
               onPress={onTimelinePress}
-              color={stats.weekCount >= 3 ? COLORS.healthy : stats.weekCount >= 1 ? COLORS.warning : COLORS.alert}
+              color={stats.weekCount >= 3 ? colors.healthy : stats.weekCount >= 1 ? colors.warning : colors.alert}
             />
             <StatCard
               label="Gut Score"
               value={stats.healthScore ?? '-'}
-              color={stats.healthScore === null ? COLORS.textMuted : stats.healthScore >= 70 ? COLORS.healthy : stats.healthScore >= 40 ? COLORS.warning : COLORS.alert}
+              hint={stats.healthScore === null ? 'Log 3+ times' : undefined}
+              color={stats.healthScore === null ? colors.textMuted : stats.healthScore >= 70 ? colors.healthy : stats.healthScore >= 40 ? colors.warning : colors.alert}
             />
           </View>
+
+          {/* Wellness Tip */}
+          {currentTip && (
+            <WellnessTipCard
+              tip={currentTip}
+              onDismiss={dismissTip}
+              onSnooze={snoozeTip}
+              onFeedback={markHelpful}
+            />
+          )}
 
           {/* Recent Section */}
           <View style={styles.recentSection}>
             <View style={styles.recentHeader}>
-              <Text style={styles.sectionTitle}>Recent</Text>
+              <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Recent</Text>
               <TouchableOpacity onPress={onTimelinePress}>
-                <Text style={styles.seeAllText}>See all →</Text>
+                <Text style={[styles.seeAllText, { color: colors.primary }]}>See all →</Text>
               </TouchableOpacity>
             </View>
 
-            {history.length === 0 ? (
+            {recentHistory.length === 0 ? (
               <View style={styles.emptyState}>
-                <Image source={require('../../assets/flushy-emoji.png')} style={styles.emptyImage} />
-                <Text style={styles.emptyText}>No logs yet</Text>
-                <Text style={styles.emptySubtext}>
+                <View style={[styles.emptyIconContainer, { backgroundColor: colors.surface }]}>
+                  <NotebookPen size={32} color={colors.textMuted} strokeWidth={1.5} />
+                </View>
+                <Text style={[styles.emptyText, { color: colors.textSecondary }]}>No logs yet</Text>
+                <Text style={[styles.emptySubtext, { color: colors.textMuted }]}>
                   Tap the button below to start tracking
                 </Text>
               </View>
             ) : (
               <View style={styles.recentList}>
-                {history.slice(0, 3).map((day) => (
-                  <TouchableOpacity key={day.date} style={styles.recentItem} onPress={onTimelinePress} activeOpacity={0.7}>
+                {recentHistory.slice(0, 5).map((day) => (
+                  <TouchableOpacity
+                    key={day.date}
+                    style={[styles.recentItem, { backgroundColor: colors.surface, borderColor: colors.borderLight }]}
+                    onPress={onTimelinePress}
+                    activeOpacity={0.7}
+                  >
                     <View>
-                      <Text style={styles.recentDate}>
+                      <Text style={[styles.recentDate, { color: colors.textSecondary }]}>
                         {formatDate(day.date)}
                       </Text>
                       <View style={styles.recentTypes}>
                         {day.entries.map((entry, i) => {
                           const stoolColor = entry.color ? getStoolColorById(entry.color) : null;
+                          const bristolType = BRISTOL_TYPES[entry.type - 1];
                           return (
-                            <View key={i} style={styles.entryBadgeGroup}>
-                              <View
-                                style={[
-                                  styles.typeBadge,
-                                  { backgroundColor: getHealthColor(BRISTOL_TYPES[entry.type - 1].health) }
-                                ]}
-                              >
-                                <Text style={styles.typeBadgeText}>{entry.type}</Text>
+                            <View
+                              key={i}
+                              style={[
+                                styles.entryCard,
+                                { backgroundColor: colors.surfaceHover, borderColor: `${getHealthColor(bristolType.health)}30` }
+                              ]}
+                            >
+                              <View style={styles.entryCardIcon}>
+                                <AnimatedBristolIcon
+                                  type={entry.type}
+                                  size={24}
+                                  color={getHealthColor(bristolType.health)}
+                                />
                               </View>
                               {stoolColor && (
-                                <View style={[styles.colorMiniDot, { backgroundColor: stoolColor.hex }]} />
+                                <View style={[styles.entryCardColor, { backgroundColor: stoolColor.hex }]} />
                               )}
                             </View>
                           );
                         })}
                       </View>
                     </View>
-                    <Text style={styles.recentCount}>
+                    <Text style={[styles.recentCount, { color: colors.textMuted }]}>
                       {day.entries.length} {day.entries.length === 1 ? 'log' : 'logs'}
                     </Text>
                   </TouchableOpacity>
@@ -143,11 +231,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         <View style={styles.buttonContainer}>
           <PrimaryButton
             title="Log Now"
-            icon={<Plus size={22} color={COLORS.textPrimary} strokeWidth={2.5} />}
+            icon={<Plus size={22} color={colors.textPrimary} strokeWidth={2.5} />}
             onPress={onLogPress}
             variant="primary"
           />
         </View>
+
+        {/* Settings Modal */}
+        <SettingsModal visible={settingsVisible} onClose={() => setSettingsVisible(false)} onResetApp={onResetApp} onViewDigest={onViewDigest} />
       </SafeAreaView>
     </LinearGradient>
   );
@@ -166,7 +257,6 @@ const styles = StyleSheet.create({
     right: -100,
     width: 300,
     height: 300,
-    backgroundColor: 'rgba(139, 92, 246, 0.12)',
     borderRadius: 150,
   },
   scrollView: {
@@ -180,26 +270,43 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 24,
   },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   dateText: {
-    color: COLORS.textMuted,
     fontSize: 13,
     letterSpacing: 2,
     textTransform: 'uppercase',
+    fontFamily: FONTS.medium,
   },
-  titleRow: {
+  headerButtons: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 6,
+    gap: 8,
+  },
+  headerButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  newBadge: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
   title: {
-    color: COLORS.textPrimary,
     fontSize: 30,
-    fontWeight: '700',
+    fontFamily: FONTS.bold,
     letterSpacing: -1,
-  },
-  titleEmoji: {
-    width: 60,
-    height: 60,
+    marginTop: 6,
   },
   statsRow: {
     flexDirection: 'row',
@@ -216,84 +323,80 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   sectionTitle: {
-    color: COLORS.textPrimary,
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: FONTS.semiBold,
   },
   seeAllText: {
-    color: COLORS.primary,
     fontSize: 14,
-    fontWeight: '500',
+    fontFamily: FONTS.medium,
   },
   recentList: {
     gap: 10,
   },
   recentItem: {
-    backgroundColor: COLORS.surface,
     borderRadius: 16,
     padding: 14,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: COLORS.borderLight,
   },
   recentDate: {
-    color: COLORS.textSecondary,
     fontSize: 13,
+    fontFamily: FONTS.regular,
   },
   recentTypes: {
     flexDirection: 'row',
-    gap: 6,
-    marginTop: 6,
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 8,
   },
-  entryBadgeGroup: {
+  entryCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
-  },
-  colorMiniDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    gap: 6,
+    borderRadius: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
   },
-  typeBadge: {
-    width: 24,
-    height: 24,
-    borderRadius: 8,
+  entryCardIcon: {
+    width: 28,
+    height: 28,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  typeBadgeText: {
-    color: COLORS.bgTertiary,
-    fontSize: 12,
-    fontWeight: '700',
+  entryCardColor: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   recentCount: {
-    color: COLORS.textMuted,
     fontSize: 13,
+    fontFamily: FONTS.regular,
   },
   emptyState: {
     alignItems: 'center',
     paddingVertical: 40,
   },
-  emptyImage: {
+  emptyIconContainer: {
     width: 72,
     height: 72,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 12,
-    opacity: 0.9,
   },
   emptyText: {
-    color: COLORS.textSecondary,
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: FONTS.semiBold,
   },
   emptySubtext: {
-    color: COLORS.textMuted,
     fontSize: 14,
     marginTop: 4,
+    fontFamily: FONTS.regular,
   },
   buttonContainer: {
     paddingHorizontal: 24,

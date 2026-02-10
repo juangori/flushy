@@ -2,7 +2,8 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { StoolColor } from '../types';
-import { COLORS, getStoolColorHealthColor } from '../constants';
+import { getStoolColorHealthColor, FONTS } from '../constants';
+import { useTheme } from '../context';
 
 interface ColorSelectorProps {
   colors: StoolColor[];
@@ -11,10 +12,12 @@ interface ColorSelectorProps {
 }
 
 export const ColorSelector: React.FC<ColorSelectorProps> = ({
-  colors,
+  colors: stoolColors,
   selectedColor,
   onSelect,
 }) => {
+  const { colors } = useTheme();
+
   const handleSelect = async (colorId: string) => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     onSelect(colorId);
@@ -22,7 +25,7 @@ export const ColorSelector: React.FC<ColorSelectorProps> = ({
 
   return (
     <View style={styles.container}>
-      {colors.map((color) => {
+      {stoolColors.map((color) => {
         const isSelected = selectedColor === color.id;
         const healthColor = getStoolColorHealthColor(color.health);
 
@@ -31,17 +34,18 @@ export const ColorSelector: React.FC<ColorSelectorProps> = ({
             key={color.id}
             style={[
               styles.colorItem,
+              { backgroundColor: colors.surface },
               color.health === 'alert' && styles.colorItemAlert,
               color.health === 'attention' && styles.colorItemAttention,
-              isSelected && styles.colorItemSelected,
+              isSelected && { backgroundColor: `${colors.primary}30`, borderColor: colors.primary },
             ]}
             onPress={() => handleSelect(color.id)}
             activeOpacity={0.7}
           >
             <View style={[styles.healthDot, { backgroundColor: healthColor }]} />
             <View style={[styles.swatch, { backgroundColor: color.hex }]} />
-            <Text style={styles.colorName}>{color.name}</Text>
-            <Text style={styles.colorDesc}>{color.description}</Text>
+            <Text style={[styles.colorName, { color: colors.textPrimary }]}>{color.name}</Text>
+            <Text style={[styles.colorDesc, { color: colors.textMuted }]}>{color.description}</Text>
           </TouchableOpacity>
         );
       })}
@@ -57,16 +61,11 @@ const styles = StyleSheet.create({
   },
   colorItem: {
     width: '48%',
-    backgroundColor: COLORS.surface,
     borderRadius: 16,
     padding: 12,
     alignItems: 'center',
     borderWidth: 2,
     borderColor: 'transparent',
-  },
-  colorItemSelected: {
-    backgroundColor: 'rgba(139, 92, 246, 0.2)',
-    borderColor: COLORS.primary,
   },
   colorItemAlert: {
     borderColor: 'rgba(248, 113, 113, 0.25)',
@@ -91,16 +90,15 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   colorName: {
-    color: COLORS.textPrimary,
     fontSize: 13,
-    fontWeight: '600',
+    fontFamily: FONTS.semiBold,
     textAlign: 'center',
   },
   colorDesc: {
-    color: COLORS.textMuted,
     fontSize: 10,
     textAlign: 'center',
     marginTop: 2,
     lineHeight: 14,
+    fontFamily: FONTS.regular,
   },
 });

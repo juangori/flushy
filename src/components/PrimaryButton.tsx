@@ -1,14 +1,15 @@
 import React from 'react';
-import { 
-  TouchableOpacity, 
-  Text, 
-  StyleSheet, 
+import {
+  TouchableOpacity,
+  Text,
+  StyleSheet,
   ViewStyle,
-  ActivityIndicator 
+  ActivityIndicator
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
-import { COLORS } from '../constants';
+import { useTheme } from '../context';
+import { FONTS } from '../constants';
 
 interface PrimaryButtonProps {
   title: string;
@@ -29,6 +30,8 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
   variant = 'primary',
   style,
 }) => {
+  const { colors } = useTheme();
+
   const handlePress = async () => {
     if (disabled || loading) return;
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -37,14 +40,14 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
 
   const getGradient = (): [string, string] => {
     if (disabled) return ['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)'];
-    
+
     switch (variant) {
       case 'success':
         return ['#4ADE80', '#22C55E'];
       case 'secondary':
         return ['rgba(255,255,255,0.15)', 'rgba(255,255,255,0.1)'];
       default:
-        return [COLORS.primary, COLORS.primaryLight];
+        return [colors.primary, colors.primaryLight];
     }
   };
 
@@ -61,18 +64,20 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
         end={{ x: 1, y: 1 }}
         style={[
           styles.gradient,
-          variant === 'success' && !disabled && styles.successShadow,
-          variant === 'primary' && !disabled && styles.primaryShadow,
+          variant === 'success' && !disabled && { shadowColor: colors.healthy },
+          variant === 'primary' && !disabled && { shadowColor: colors.primary },
+          (variant === 'success' || variant === 'primary') && !disabled && styles.buttonShadow,
         ]}
       >
         {loading ? (
-          <ActivityIndicator color={COLORS.textPrimary} />
+          <ActivityIndicator color={colors.textPrimary} />
         ) : (
           <>
             {icon && (typeof icon === 'string' ? <Text style={styles.icon}>{icon}</Text> : icon)}
             <Text style={[
               styles.text,
-              disabled && styles.textDisabled,
+              { color: colors.textPrimary },
+              disabled && { color: colors.textMuted },
             ]}>
               {title}
             </Text>
@@ -97,17 +102,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 10,
   },
-  primaryShadow: {
-    shadowColor: COLORS.primary,
+  buttonShadow: {
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.4,
-    shadowRadius: 20,
-    elevation: 10,
-  },
-  successShadow: {
-    shadowColor: COLORS.healthy,
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
     shadowRadius: 20,
     elevation: 10,
   },
@@ -115,11 +112,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
   },
   text: {
-    color: COLORS.textPrimary,
     fontSize: 18,
-    fontWeight: '600',
-  },
-  textDisabled: {
-    color: COLORS.textMuted,
+    fontFamily: FONTS.semiBold,
   },
 });

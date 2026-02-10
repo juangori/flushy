@@ -1,5 +1,36 @@
 import { BristolType, QuickTag, StoolColor, StoolColorHealth } from '../types';
 
+export { FONTS, TYPOGRAPHY } from './fonts';
+export {
+  WELLNESS_TIPS,
+  TIP_COOLDOWNS,
+  WELLNESS_DISCLAIMER,
+  WELLNESS_SOURCES,
+  FULL_DISCLAIMER,
+  PRIVACY_STATEMENT,
+} from './wellnessTips';
+export type { WellnessTip, PatternType } from './wellnessTips';
+export {
+  AGE_OPTIONS,
+  SEX_OPTIONS,
+  CONDITION_OPTIONS,
+  CONDITION_EFFECTS,
+  AGE_EFFECTS,
+  DEFAULT_USER_PROFILE,
+} from './userProfile';
+export type {
+  UserProfile,
+  AgeRange,
+  BiologicalSex,
+  HealthCondition,
+} from './userProfile';
+export {
+  WEEKLY_MESSAGES,
+  HEALTH_INDICATORS,
+  STREAK_MESSAGES,
+} from './weeklyMessages';
+export type { WeeklyMessageCategory, HealthIndicatorType } from './weeklyMessages';
+
 export const BRISTOL_TYPES: BristolType[] = [
   { type: 1, emoji: '🫘', name: 'Separate lumps', desc: 'Hard to pass', health: 'constipated' },
   { type: 2, emoji: '🥜', name: 'Lumpy sausage', desc: 'Slightly hard', health: 'constipated' },
@@ -11,16 +42,17 @@ export const BRISTOL_TYPES: BristolType[] = [
 ];
 
 export const QUICK_TAGS: QuickTag[] = [
-  { id: 'coffee', emoji: '☕', label: 'Coffee' },
-  { id: 'spicy', emoji: '🌶️', label: 'Spicy food' },
-  { id: 'alcohol', emoji: '🍷', label: 'Alcohol' },
-  { id: 'fiber', emoji: '🥗', label: 'High fiber' },
-  { id: 'stress', emoji: '😰', label: 'Stressed' },
-  { id: 'meds', emoji: '💊', label: 'Medication' },
-  { id: 'travel', emoji: '✈️', label: 'Traveling' },
-  { id: 'period', emoji: '🔴', label: 'Period' },
-  { id: 'dairy', emoji: '🧀', label: 'Dairy' },
-  { id: 'exercise', emoji: '🏃', label: 'Exercise' },
+  { id: 'coffee', label: 'Coffee', icon: 'Coffee', iconColor: '#92400E', bgColor: '#FEF3C7' },
+  { id: 'spicy', label: 'Spicy food', icon: 'Flame', iconColor: '#DC2626', bgColor: '#FEE2E2' },
+  { id: 'alcohol', label: 'Alcohol', icon: 'Wine', iconColor: '#7C3AED', bgColor: '#EDE9FE' },
+  { id: 'fiber', label: 'High fiber', icon: 'Salad', iconColor: '#16A34A', bgColor: '#DCFCE7' },
+  { id: 'water', label: 'Hydrated', icon: 'GlassWater', iconColor: '#0EA5E9', bgColor: '#E0F2FE' },
+  { id: 'stress', label: 'Stressed', icon: 'Frown', iconColor: '#EA580C', bgColor: '#FFEDD5' },
+  { id: 'meds', label: 'Medication', icon: 'Pill', iconColor: '#2563EB', bgColor: '#DBEAFE' },
+  { id: 'travel', label: 'Traveling', icon: 'Plane', iconColor: '#0891B2', bgColor: '#CFFAFE' },
+  { id: 'period', label: 'Period', icon: 'Droplets', iconColor: '#E11D48', bgColor: '#FFE4E6' },
+  { id: 'dairy', label: 'Dairy', icon: 'Milk', iconColor: '#CA8A04', bgColor: '#FEF9C3' },
+  { id: 'exercise', label: 'Exercise', icon: 'Dumbbell', iconColor: '#059669', bgColor: '#D1FAE5' },
 ];
 
 export const STOOL_COLORS: StoolColor[] = [
@@ -63,6 +95,11 @@ export const COLORS = {
   borderLight: 'rgba(255, 255, 255, 0.05)',
 };
 
+// Storage keys - centralized
+export { STORAGE_KEYS, ALL_STORAGE_KEYS } from './storageKeys';
+export type { StorageKey } from './storageKeys';
+
+// Legacy exports for backwards compatibility
 export const STORAGE_KEY = '@flushy_history';
 export const LEGACY_STORAGE_KEY = '@plop_history';
 
@@ -88,3 +125,15 @@ export const getStoolColorHealthColor = (health: StoolColorHealth): string => {
 export const getStoolColorById = (id: string): StoolColor | undefined => {
   return STOOL_COLORS.find(c => c.id === id);
 };
+
+// Achievement exports
+export { ACHIEVEMENTS, getAchievementById } from './achievements';
+
+// Icon maps - centralized
+export {
+  ACHIEVEMENT_ICON_MAP,
+  HEALTH_ICON_MAP,
+  TAG_ICON_MAP,
+  WELLNESS_TIP_ICON_MAP,
+  CONDITION_ICON_MAP,
+} from './iconMaps';

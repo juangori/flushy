@@ -2,8 +2,9 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { BristolType } from '../types';
-import { COLORS, getHealthColor } from '../constants';
-import { BristolIcon } from './BristolIcons';
+import { getHealthColor, FONTS } from '../constants';
+import { AnimatedBristolIcon } from './AnimatedBristolIcons';
+import { useTheme } from '../context';
 
 interface BristolSelectorProps {
   types: BristolType[];
@@ -16,6 +17,8 @@ export const BristolSelector: React.FC<BristolSelectorProps> = ({
   selectedType,
   onSelect,
 }) => {
+  const { colors } = useTheme();
+
   const handleSelect = async (type: BristolType) => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     onSelect(type);
@@ -25,33 +28,34 @@ export const BristolSelector: React.FC<BristolSelectorProps> = ({
     <View style={styles.container}>
       {types.map((item) => {
         const isSelected = selectedType?.type === item.type;
-        
+
         return (
           <TouchableOpacity
             key={item.type}
             style={[
               styles.typeButton,
-              isSelected && styles.typeButtonSelected,
+              { backgroundColor: colors.surface },
+              isSelected && { backgroundColor: `${colors.primary}30`, borderColor: colors.primary },
             ]}
             onPress={() => handleSelect(item)}
             activeOpacity={0.7}
           >
-            <View style={styles.emojiContainer}>
-              <BristolIcon type={item.type} size={32} color={getHealthColor(item.health)} />
+            <View style={[styles.emojiContainer, { backgroundColor: colors.surfaceHover }]}>
+              <AnimatedBristolIcon type={item.type} size={44} color={getHealthColor(item.health)} />
             </View>
-            
+
             <View style={styles.textContainer}>
-              <Text style={styles.typeName}>
+              <Text style={[styles.typeName, { color: colors.textPrimary }]}>
                 Type {item.type}: {item.name}
               </Text>
-              <Text style={styles.typeDesc}>{item.desc}</Text>
+              <Text style={[styles.typeDesc, { color: colors.textMuted }]}>{item.desc}</Text>
             </View>
-            
-            <View 
+
+            <View
               style={[
                 styles.healthIndicator,
                 { backgroundColor: getHealthColor(item.health) }
-              ]} 
+              ]}
             />
           </TouchableOpacity>
         );
@@ -67,40 +71,30 @@ const styles = StyleSheet.create({
   typeButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.surface,
-    borderRadius: 16,
-    padding: 14,
-    gap: 14,
+    borderRadius: 20,
+    padding: 16,
+    gap: 16,
     borderWidth: 2,
     borderColor: 'transparent',
   },
-  typeButtonSelected: {
-    backgroundColor: 'rgba(139, 92, 246, 0.2)',
-    borderColor: COLORS.primary,
-  },
   emojiContainer: {
-    width: 48,
-    height: 48,
-    backgroundColor: COLORS.surfaceHover,
-    borderRadius: 14,
+    width: 64,
+    height: 64,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  emoji: {
-    fontSize: 26,
   },
   textContainer: {
     flex: 1,
   },
   typeName: {
-    color: COLORS.textPrimary,
     fontSize: 15,
-    fontWeight: '600',
+    fontFamily: FONTS.semiBold,
   },
   typeDesc: {
-    color: COLORS.textMuted,
     fontSize: 13,
     marginTop: 2,
+    fontFamily: FONTS.regular,
   },
   healthIndicator: {
     width: 12,

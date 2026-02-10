@@ -10,9 +10,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { COLORS } from '../constants';
 import { BristolIcon } from '../components/BristolIcons';
 import { PrimaryButton } from '../components';
+import { useTheme } from '../context';
+import { FONTS } from '../constants';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -30,7 +31,7 @@ const slides = [
   {
     title: 'Bristol Stool Chart',
     subtitle: '7 types, science-backed',
-    description: 'Log using the Bristol Stool Scale — a medical tool used by doctors worldwide to classify stool consistency.',
+    description: 'Log using the Bristol Stool Scale, a medical tool used by doctors worldwide to classify stool consistency.',
     useBristol: true,
   },
   {
@@ -42,6 +43,7 @@ const slides = [
 ];
 
 export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
+  const { colors } = useTheme();
   const [currentSlide, setCurrentSlide] = useState(0);
   const slideAnim = useRef(new Animated.Value(0)).current;
 
@@ -65,7 +67,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
 
   return (
     <LinearGradient
-      colors={[COLORS.bgPrimary, COLORS.bgSecondary, COLORS.bgTertiary]}
+      colors={[colors.bgPrimary, colors.bgSecondary, colors.bgTertiary]}
       style={styles.container}
       start={{ x: 0.3, y: 0 }}
       end={{ x: 0.7, y: 1 }}
@@ -74,7 +76,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
         {/* Skip button */}
         {currentSlide < slides.length - 1 && (
           <TouchableOpacity style={styles.skipButton} onPress={onComplete}>
-            <Text style={styles.skipText}>Skip</Text>
+            <Text style={[styles.skipText, { color: colors.textMuted }]}>Skip</Text>
           </TouchableOpacity>
         )}
 
@@ -101,22 +103,22 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
                       {[3, 4, 5].map((type) => (
                         <View key={type} style={styles.bristolItem}>
                           <BristolIcon type={type} size={40} color={
-                            type === 4 ? COLORS.healthy : COLORS.warning
+                            type === 4 ? colors.healthy : colors.warning
                           } />
-                          <Text style={styles.bristolLabel}>Type {type}</Text>
+                          <Text style={[styles.bristolLabel, { color: colors.textMuted }]}>Type {type}</Text>
                         </View>
                       ))}
                     </View>
                   )}
                   {slide.useStats && (
                     <View style={styles.statsPreview}>
-                      <View style={styles.previewCard}>
-                        <Text style={styles.previewLabel}>Gut Score</Text>
-                        <Text style={[styles.previewValue, { color: COLORS.healthy }]}>85</Text>
+                      <View style={[styles.previewCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                        <Text style={[styles.previewLabel, { color: colors.textMuted }]}>Gut Score</Text>
+                        <Text style={[styles.previewValue, { color: colors.healthy }]}>85</Text>
                       </View>
-                      <View style={styles.previewCard}>
-                        <Text style={styles.previewLabel}>Streak</Text>
-                        <Text style={[styles.previewValue, { color: COLORS.healthy }]}>7</Text>
+                      <View style={[styles.previewCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                        <Text style={[styles.previewLabel, { color: colors.textMuted }]}>Streak</Text>
+                        <Text style={[styles.previewValue, { color: colors.healthy }]}>7</Text>
                       </View>
                     </View>
                   )}
@@ -124,9 +126,9 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
 
                 {/* Text */}
                 <View style={styles.textContent}>
-                  <Text style={styles.slideTitle}>{slide.title}</Text>
-                  <Text style={styles.slideSubtitle}>{slide.subtitle}</Text>
-                  <Text style={styles.slideDescription}>{slide.description}</Text>
+                  <Text style={[styles.slideTitle, { color: colors.textPrimary }]}>{slide.title}</Text>
+                  <Text style={[styles.slideSubtitle, { color: colors.primary }]}>{slide.subtitle}</Text>
+                  <Text style={[styles.slideDescription, { color: colors.textSecondary }]}>{slide.description}</Text>
                 </View>
               </View>
             ))}
@@ -140,7 +142,8 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
               key={index}
               style={[
                 styles.dot,
-                currentSlide === index && styles.dotActive,
+                { backgroundColor: colors.surface },
+                currentSlide === index && { backgroundColor: colors.primary, width: 24 },
               ]}
             />
           ))}
@@ -174,9 +177,8 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   skipText: {
-    color: COLORS.textMuted,
     fontSize: 15,
-    fontWeight: '500',
+    fontFamily: FONTS.medium,
   },
   slidesContainer: {
     flex: 1,
@@ -210,32 +212,29 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   bristolLabel: {
-    color: COLORS.textMuted,
     fontSize: 12,
-    fontWeight: '500',
+    fontFamily: FONTS.medium,
   },
   statsPreview: {
     flexDirection: 'row',
     gap: 16,
   },
   previewCard: {
-    backgroundColor: COLORS.surface,
     borderRadius: 20,
     padding: 20,
     paddingHorizontal: 28,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: COLORS.border,
   },
   previewLabel: {
-    color: COLORS.textMuted,
     fontSize: 11,
     textTransform: 'uppercase',
     letterSpacing: 1,
+    fontFamily: FONTS.medium,
   },
   previewValue: {
     fontSize: 36,
-    fontWeight: '700',
+    fontFamily: FONTS.bold,
     marginTop: 4,
     letterSpacing: -1,
   },
@@ -243,25 +242,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   slideTitle: {
-    color: COLORS.textPrimary,
     fontSize: 28,
-    fontWeight: '700',
+    fontFamily: FONTS.bold,
     textAlign: 'center',
     letterSpacing: -0.5,
   },
   slideSubtitle: {
-    color: COLORS.primary,
     fontSize: 15,
-    fontWeight: '500',
+    fontFamily: FONTS.medium,
     textAlign: 'center',
     marginTop: 8,
   },
   slideDescription: {
-    color: COLORS.textSecondary,
     fontSize: 15,
     textAlign: 'center',
     lineHeight: 22,
     marginTop: 12,
+    fontFamily: FONTS.regular,
   },
   dotsContainer: {
     flexDirection: 'row',
@@ -273,11 +270,6 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: COLORS.surface,
-  },
-  dotActive: {
-    backgroundColor: COLORS.primary,
-    width: 24,
   },
   buttonContainer: {
     paddingHorizontal: 40,

@@ -11,26 +11,63 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
-import { X, ChevronLeft } from 'lucide-react-native';
+import {
+  X,
+  ChevronLeft,
+  Sunrise,
+  Sun,
+  SunMedium,
+  CloudSun,
+  Sunset,
+  Moon,
+  Sparkles,
+  LucideIcon,
+} from 'lucide-react-native';
 import { BristolSelector, TagSelector, ColorSelector, PrimaryButton } from '../components';
 import { BristolType } from '../types';
-import { COLORS, BRISTOL_TYPES, QUICK_TAGS, STOOL_COLORS } from '../constants';
+import { BRISTOL_TYPES, QUICK_TAGS, STOOL_COLORS, FONTS } from '../constants';
+import { useTheme } from '../context';
+import { formatDate } from '../utils';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 interface LogScreenProps {
-  onSave: (type: BristolType, tags: string[], color: string) => Promise<boolean>;
+  onSave: (type: BristolType, tags: string[], color: string, time?: string) => Promise<boolean>;
   onCancel: () => void;
+  forDate?: string; // Optional: YYYY-MM-DD for past entries
 }
+
+// Time slot icon map
+const TIME_ICON_MAP: Record<string, LucideIcon> = {
+  Sunrise,
+  Sun,
+  SunMedium,
+  CloudSun,
+  Sunset,
+  Moon,
+};
+
+// Time slots for past date logging
+const TIME_SLOTS = [
+  { id: 'early_morning', label: 'Early Morning', time: '06:30', icon: 'Sunrise', iconColor: '#EA580C', bgColor: '#FFEDD5' },
+  { id: 'morning', label: 'Morning', time: '09:00', icon: 'Sun', iconColor: '#CA8A04', bgColor: '#FEF9C3' },
+  { id: 'midday', label: 'Midday', time: '12:00', icon: 'SunMedium', iconColor: '#D97706', bgColor: '#FEF3C7' },
+  { id: 'afternoon', label: 'Afternoon', time: '15:30', icon: 'CloudSun', iconColor: '#E11D48', bgColor: '#FFE4E6' },
+  { id: 'evening', label: 'Evening', time: '19:00', icon: 'Sunset', iconColor: '#7C3AED', bgColor: '#EDE9FE' },
+  { id: 'night', label: 'Night', time: '22:00', icon: 'Moon', iconColor: '#4F46E5', bgColor: '#E0E7FF' },
+];
 
 export const LogScreen: React.FC<LogScreenProps> = ({
   onSave,
   onCancel,
+  forDate,
 }) => {
+  const { colors } = useTheme();
   const [step, setStep] = useState(1);
   const [selectedType, setSelectedType] = useState<BristolType | null>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedTime, setSelectedTime] = useState<string | null>(forDate ? 'midday' : null);
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
@@ -84,7 +121,10 @@ export const LogScreen: React.FC<LogScreenProps> = ({
     setIsSaving(true);
 
     try {
-      const success = await onSave(selectedType, selectedTags, selectedColor);
+      // Get the time string from selected time slot
+      const timeSlot = TIME_SLOTS.find(t => t.id === selectedTime);
+      const timeString = timeSlot?.time;
+      const success = await onSave(selectedType, selectedTags, selectedColor, timeString);
 
       if (success) {
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -105,11 +145,13 @@ export const LogScreen: React.FC<LogScreenProps> = ({
   if (showSuccess) {
     return (
       <LinearGradient
-        colors={[COLORS.bgPrimary, COLORS.bgSecondary, COLORS.bgTertiary]}
+        colors={[colors.bgPrimary, colors.bgSecondary, colors.bgTertiary]}
         style={styles.successContainer}
       >
-        <Animated.Text style={styles.successEmoji}>✨</Animated.Text>
-        <Text style={styles.successText}>Logged!</Text>
+        <Animated.View style={styles.successIcon}>
+          <Sparkles size={48} color={colors.healthy} strokeWidth={1.5} />
+        </Animated.View>
+        <Text style={[styles.successText, { color: colors.healthy }]}>Logged!</Text>
       </LinearGradient>
     );
   }
@@ -118,7 +160,7 @@ export const LogScreen: React.FC<LogScreenProps> = ({
 
   return (
     <LinearGradient
-      colors={[COLORS.bgPrimary, COLORS.bgSecondary, COLORS.bgTertiary]}
+      colors={[colors.bgPrimary, colors.bgSecondary, colors.bgTertiary]}
       style={styles.container}
       start={{ x: 0.3, y: 0 }}
       end={{ x: 0.7, y: 1 }}
@@ -127,16 +169,25 @@ export const LogScreen: React.FC<LogScreenProps> = ({
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity
-            style={styles.headerButton}
+            style={[styles.headerButton, { backgroundColor: colors.surface }]}
             onPress={handleBack}
           >
             {step > 1 ? (
-              <ChevronLeft size={20} color={COLORS.textSecondary} strokeWidth={2} />
+              <ChevronLeft size={20} color={colors.textSecondary} strokeWidth={2} />
             ) : (
-              <X size={20} color={COLORS.textSecondary} strokeWidth={2} />
+              <X size={20} color={colors.textSecondary} strokeWidth={2} />
             )}
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Quick Log</Text>
+          <View style={styles.headerTitleContainer}>
+            <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>
+              {forDate ? 'Add Past Log' : 'Quick Log'}
+            </Text>
+            {forDate && (
+              <Text style={[styles.headerSubtitle, { color: colors.textMuted }]}>
+                {formatDate(forDate)}
+              </Text>
+            )}
+          </View>
           <View style={styles.headerSpacer} />
         </View>
 
@@ -150,20 +201,22 @@ export const LogScreen: React.FC<LogScreenProps> = ({
               <View key={label} style={styles.stepItem}>
                 <View style={[
                   styles.stepDot,
-                  isActive && styles.stepDotActive,
-                  isCurrent && styles.stepDotCurrent,
+                  { backgroundColor: colors.surface },
+                  isActive && { backgroundColor: colors.primary },
+                  isCurrent && { width: 12, height: 12, borderRadius: 6, borderWidth: 2, borderColor: colors.primaryLight, backgroundColor: colors.primary },
                 ]} />
                 <Text style={[
                   styles.stepLabel,
-                  isActive && styles.stepLabelActive,
+                  { color: colors.textMuted },
+                  isActive && { color: colors.textSecondary },
                 ]}>{label}</Text>
               </View>
             );
           })}
-          <View style={styles.stepLine}>
+          <View style={[styles.stepLine, { backgroundColor: colors.surface }]}>
             <View style={[
               styles.stepLineProgress,
-              { width: `${((step - 1) / 2) * 100}%` }
+              { width: `${((step - 1) / 2) * 100}%`, backgroundColor: colors.primary }
             ]} />
           </View>
         </View>
@@ -183,7 +236,7 @@ export const LogScreen: React.FC<LogScreenProps> = ({
                 contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
               >
-                <Text style={styles.sectionLabel}>How did it look?</Text>
+                <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>How did it look?</Text>
                 <BristolSelector
                   types={BRISTOL_TYPES}
                   selectedType={selectedType}
@@ -199,7 +252,7 @@ export const LogScreen: React.FC<LogScreenProps> = ({
                 contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
               >
-                <Text style={styles.sectionLabel}>What color was it?</Text>
+                <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>What color was it?</Text>
                 <ColorSelector
                   colors={STOOL_COLORS}
                   selectedColor={selectedColor}
@@ -208,19 +261,66 @@ export const LogScreen: React.FC<LogScreenProps> = ({
               </ScrollView>
             </View>
 
-            {/* Step 3: Tags + Save */}
+            {/* Step 3: Tags + Time (for past dates) + Save */}
             <View style={styles.panel}>
               <ScrollView
                 style={styles.scrollView}
                 contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
               >
-                <Text style={styles.sectionLabel}>Quick tags (optional)</Text>
+                {/* Time selector for past dates */}
+                {forDate && (
+                  <>
+                    <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>What time was it?</Text>
+                    <View style={styles.timeGrid}>
+                      {TIME_SLOTS.map((slot) => {
+                        const isSelected = selectedTime === slot.id;
+                        const IconComponent = TIME_ICON_MAP[slot.icon];
+                        return (
+                          <TouchableOpacity
+                            key={slot.id}
+                            style={[
+                              styles.timeSlot,
+                              { backgroundColor: colors.surface, borderColor: colors.borderLight },
+                              isSelected && { backgroundColor: `${colors.primary}15`, borderColor: colors.primary },
+                            ]}
+                            onPress={() => {
+                              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                              setSelectedTime(slot.id);
+                            }}
+                            activeOpacity={0.7}
+                          >
+                            <View style={[styles.timeSlotIconContainer, { backgroundColor: slot.bgColor }]}>
+                              {IconComponent && (
+                                <IconComponent size={18} color={slot.iconColor} strokeWidth={2.5} />
+                              )}
+                            </View>
+                            <Text style={[
+                              styles.timeSlotLabel,
+                              { color: colors.textSecondary },
+                              isSelected && { color: colors.primary },
+                            ]}>
+                              {slot.label}
+                            </Text>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  </>
+                )}
+
+                <Text style={[styles.sectionLabel, { color: colors.textMuted }, forDate && { marginTop: 24 }]}>What might have affected this?</Text>
+                <Text style={[styles.tagSubtitle, { color: colors.textSecondary }]}>
+                  We'll find patterns and personalized insights for you
+                </Text>
                 <TagSelector
                   tags={QUICK_TAGS}
                   selectedTags={selectedTags}
                   onToggle={handleTagToggle}
                 />
+                <Text style={[styles.tagHint, { color: colors.textMuted }]}>
+                  Tip: Regular tagging helps us spot what affects your gut health
+                </Text>
               </ScrollView>
             </View>
           </Animated.View>
@@ -260,7 +360,6 @@ const styles = StyleSheet.create({
   headerButton: {
     width: 44,
     height: 44,
-    backgroundColor: COLORS.surface,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
@@ -268,10 +367,17 @@ const styles = StyleSheet.create({
   headerSpacer: {
     width: 44,
   },
+  headerTitleContainer: {
+    alignItems: 'center',
+  },
   headerTitle: {
-    color: COLORS.textPrimary,
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: FONTS.semiBold,
+  },
+  headerSubtitle: {
+    fontSize: 13,
+    fontFamily: FONTS.regular,
+    marginTop: 2,
   },
 
   // Step indicator
@@ -290,27 +396,11 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: COLORS.surface,
     marginBottom: 6,
   },
-  stepDotActive: {
-    backgroundColor: COLORS.primary,
-  },
-  stepDotCurrent: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: COLORS.primaryLight,
-    backgroundColor: COLORS.primary,
-  },
   stepLabel: {
-    color: COLORS.textMuted,
     fontSize: 11,
-    fontWeight: '500',
-  },
-  stepLabelActive: {
-    color: COLORS.textSecondary,
+    fontFamily: FONTS.medium,
   },
   stepLine: {
     position: 'absolute',
@@ -318,11 +408,9 @@ const styles = StyleSheet.create({
     left: 55,
     right: 55,
     height: 2,
-    backgroundColor: COLORS.surface,
   },
   stepLineProgress: {
     height: '100%',
-    backgroundColor: COLORS.primary,
   },
 
   // Panel sliding
@@ -347,12 +435,51 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   sectionLabel: {
-    color: COLORS.textMuted,
     fontSize: 12,
     letterSpacing: 1,
     textTransform: 'uppercase',
     marginBottom: 12,
     marginLeft: 4,
+    fontFamily: FONTS.medium,
+  },
+  tagSubtitle: {
+    fontSize: 14,
+    marginBottom: 16,
+    marginLeft: 4,
+    fontFamily: FONTS.regular,
+  },
+  tagHint: {
+    fontSize: 12,
+    marginTop: 20,
+    textAlign: 'center',
+    fontFamily: FONTS.regular,
+    fontStyle: 'italic',
+  },
+  // Time selector
+  timeGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginBottom: 8,
+  },
+  timeSlot: {
+    width: '31%',
+    paddingVertical: 12,
+    borderRadius: 14,
+    alignItems: 'center',
+    borderWidth: 1,
+  },
+  timeSlotIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 6,
+  },
+  timeSlotLabel: {
+    fontSize: 11,
+    fontFamily: FONTS.medium,
   },
   buttonContainer: {
     paddingHorizontal: 24,
@@ -364,13 +491,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  successEmoji: {
-    fontSize: 80,
+  successIcon: {
+    marginBottom: 8,
   },
   successText: {
-    color: COLORS.healthy,
     fontSize: 24,
-    fontWeight: '600',
+    fontFamily: FONTS.semiBold,
     marginTop: 20,
     letterSpacing: -0.5,
   },

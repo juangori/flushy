@@ -1,8 +1,38 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import {
+  Coffee,
+  Flame,
+  Wine,
+  Salad,
+  Frown,
+  Pill,
+  Plane,
+  Droplets,
+  Milk,
+  Dumbbell,
+  GlassWater,
+  LucideIcon,
+} from 'lucide-react-native';
 import { QuickTag } from '../types';
-import { COLORS } from '../constants';
+import { useTheme } from '../context';
+import { FONTS } from '../constants';
+
+// Map icon names to components
+const ICON_MAP: Record<string, LucideIcon> = {
+  Coffee,
+  Flame,
+  Wine,
+  Salad,
+  Frown,
+  Pill,
+  Plane,
+  Droplets,
+  Milk,
+  Dumbbell,
+  GlassWater,
+};
 
 interface TagSelectorProps {
   tags: QuickTag[];
@@ -15,6 +45,8 @@ export const TagSelector: React.FC<TagSelectorProps> = ({
   selectedTags,
   onToggle,
 }) => {
+  const { colors } = useTheme();
+
   const handleToggle = async (tagId: string) => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     onToggle(tagId);
@@ -24,19 +56,25 @@ export const TagSelector: React.FC<TagSelectorProps> = ({
     <View style={styles.container}>
       {tags.map((tag) => {
         const isSelected = selectedTags.includes(tag.id);
-        
+        const IconComponent = ICON_MAP[tag.icon];
+
         return (
           <TouchableOpacity
             key={tag.id}
             style={[
               styles.tagButton,
-              isSelected && styles.tagButtonSelected,
+              { backgroundColor: colors.surfaceHover },
+              isSelected && { backgroundColor: `${colors.primary}35`, borderColor: colors.primary },
             ]}
             onPress={() => handleToggle(tag.id)}
             activeOpacity={0.7}
           >
-            <Text style={styles.emoji}>{tag.emoji}</Text>
-            <Text style={styles.label}>{tag.label}</Text>
+            <View style={[styles.iconContainer, { backgroundColor: tag.bgColor }]}>
+              {IconComponent && (
+                <IconComponent size={14} color={tag.iconColor} strokeWidth={2.5} />
+              )}
+            </View>
+            <Text style={[styles.label, { color: colors.textPrimary }]}>{tag.label}</Text>
           </TouchableOpacity>
         );
       })}
@@ -53,23 +91,22 @@ const styles = StyleSheet.create({
   tagButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.surfaceHover,
     borderRadius: 20,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    gap: 8,
     borderWidth: 1,
     borderColor: 'transparent',
   },
-  tagButtonSelected: {
-    backgroundColor: 'rgba(139, 92, 246, 0.25)',
-    borderColor: COLORS.primary,
-  },
-  emoji: {
-    fontSize: 16,
+  iconContainer: {
+    width: 26,
+    height: 26,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   label: {
-    color: COLORS.textPrimary,
     fontSize: 14,
+    fontFamily: FONTS.medium,
   },
 });

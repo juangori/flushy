@@ -1,47 +1,49 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { LogEntry } from '../types';
-import { BRISTOL_TYPES, QUICK_TAGS, COLORS, getHealthColor, getStoolColorById } from '../constants';
-import { BristolIcon } from './BristolIcons';
+import { BRISTOL_TYPES, QUICK_TAGS, getHealthColor, getStoolColorById, FONTS } from '../constants';
+import { AnimatedBristolIcon } from './AnimatedBristolIcons';
+import { useTheme } from '../context';
 
 interface TimelineEntryProps {
   entry: LogEntry;
 }
 
 export const TimelineEntry: React.FC<TimelineEntryProps> = ({ entry }) => {
+  const { colors } = useTheme();
   const bristolType = BRISTOL_TYPES[entry.type - 1];
   const stoolColor = entry.color ? getStoolColorById(entry.color) : null;
 
   return (
     <View style={[
       styles.container,
-      { borderLeftColor: getHealthColor(bristolType.health) }
+      { backgroundColor: colors.surface, borderLeftColor: getHealthColor(bristolType.health) }
     ]}>
-      <View style={styles.emojiContainer}>
-        <BristolIcon type={entry.type} size={28} color={getHealthColor(bristolType.health)} />
+      <View style={[styles.emojiContainer, { backgroundColor: colors.surfaceHover }]}>
+        <AnimatedBristolIcon type={entry.type} size={32} color={getHealthColor(bristolType.health)} />
       </View>
 
       <View style={styles.content}>
         <View style={styles.titleRow}>
-          <Text style={styles.title}>
+          <Text style={[styles.title, { color: colors.textPrimary }]}>
             Type {entry.type}: {bristolType.name}
           </Text>
           {stoolColor && (
             <View style={[styles.colorDot, { backgroundColor: stoolColor.hex }]} />
           )}
         </View>
-        <Text style={styles.time}>{entry.time}</Text>
-        
+        <Text style={[styles.time, { color: colors.textMuted }]}>{entry.time}</Text>
+
         {entry.tags.length > 0 && (
           <View style={styles.tagsContainer}>
             {entry.tags.map(tagId => {
               const tag = QUICK_TAGS.find(t => t.id === tagId);
               if (!tag) return null;
-              
+
               return (
-                <View key={tagId} style={styles.tag}>
-                  <Text style={styles.tagText}>
-                    {tag.emoji} {tag.label}
+                <View key={tagId} style={[styles.tag, { backgroundColor: tag.bgColor }]}>
+                  <Text style={[styles.tagText, { color: tag.iconColor }]}>
+                    {tag.label}
                   </Text>
                 </View>
               );
@@ -55,7 +57,6 @@ export const TimelineEntry: React.FC<TimelineEntryProps> = ({ entry }) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: COLORS.surface,
     borderRadius: 16,
     padding: 14,
     borderLeftWidth: 4,
@@ -66,13 +67,9 @@ const styles = StyleSheet.create({
   emojiContainer: {
     width: 48,
     height: 48,
-    backgroundColor: COLORS.surfaceHover,
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  emoji: {
-    fontSize: 24,
   },
   content: {
     flex: 1,
@@ -83,9 +80,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   title: {
-    color: COLORS.textPrimary,
     fontSize: 15,
-    fontWeight: '600',
+    fontFamily: FONTS.semiBold,
   },
   colorDot: {
     width: 14,
@@ -95,9 +91,9 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   time: {
-    color: COLORS.textMuted,
     fontSize: 13,
     marginTop: 2,
+    fontFamily: FONTS.regular,
   },
   tagsContainer: {
     flexDirection: 'row',
@@ -106,13 +102,12 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   tag: {
-    backgroundColor: 'rgba(139, 92, 246, 0.2)',
     borderRadius: 10,
     paddingVertical: 4,
     paddingHorizontal: 8,
   },
   tagText: {
-    color: COLORS.textSecondary,
     fontSize: 11,
+    fontFamily: FONTS.regular,
   },
 });

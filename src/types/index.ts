@@ -8,8 +8,10 @@ export interface BristolType {
 
 export interface QuickTag {
   id: string;
-  emoji: string;
   label: string;
+  icon: string;       // Lucide icon name
+  iconColor: string;  // Icon color
+  bgColor: string;    // Background color (light tint)
 }
 
 export type StoolColorHealth = 'normal' | 'attention' | 'alert';
@@ -43,3 +45,12 @@ export interface Stats {
   avgType: string;
   healthScore: number | null;
 }
+
+// Achievement types
+export type {
+  AchievementCategory,
+  UserStats,
+  Achievement,
+  UnlockedAchievement,
+  AchievementState,
+} from './achievements';

@@ -13,7 +13,10 @@
       "Bash(node -e:*)",
       "Bash(dir:*)",
       "Bash(git -C \"c:\\\\Users\\\\juang\\\\Documents\\\\flushy\" log --oneline -15)",
-      "Bash(git -C \"c:\\\\Users\\\\juang\\\\Documents\\\\flushy\" show --stat HEAD)"
+      "Bash(git -C \"c:\\\\Users\\\\juang\\\\Documents\\\\flushy\" show --stat HEAD)",
+      "Bash(npx expo start)",
+      "Bash(npx expo start:*)",
+      "Bash(grep:*)"
     ]
   }
 }
