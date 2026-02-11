@@ -6,6 +6,7 @@
     <title>Flushy - Gut Health & Stool Tracker</title>
     <meta name="description" content="Track your gut health privately. All data stays on your device.">
     <link rel="icon" type="image/png" href="icon.png">
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -66,7 +67,12 @@
             font-size: 0.85rem;
             color: rgba(255, 255, 255, 0.7);
         }
-        .badge-icon { font-size: 1rem; }
+        .badge-icon {
+            width: 16px;
+            height: 16px;
+            stroke: currentColor;
+            stroke-width: 2;
+        }
         .store-links {
             display: flex;
             gap: 16px;
@@ -132,15 +138,15 @@
         </p>
 
         <div class="badges">
-            <span class="badge"><span class="badge-icon">🔒</span> 100% Private</span>
-            <span class="badge"><span class="badge-icon">📊</span> Smart Insights</span>
-            <span class="badge"><span class="badge-icon">🏆</span> Achievements</span>
+            <span class="badge"><i data-lucide="shield" class="badge-icon" style="color: #4ADE80;"></i> 100% Private</span>
+            <span class="badge"><i data-lucide="bar-chart-3" class="badge-icon" style="color: #8B5CF6;"></i> Smart Insights</span>
+            <span class="badge"><i data-lucide="trophy" class="badge-icon" style="color: #FBBF24;"></i> Achievements</span>
         </div>
 
         <div class="store-links">
             <!-- Update these links when your apps are live -->
-            <a href="#" class="store-link">Coming to App Store</a>
-            <a href="#" class="store-link">Coming to Google Play</a>
+            <a href="#" class="store-link"><i data-lucide="apple" style="width:18px;height:18px;"></i> Coming to App Store</a>
+            <a href="#" class="store-link"><i data-lucide="smartphone" style="width:18px;height:18px;"></i> Coming to Google Play</a>
         </div>
 
         <div class="legal">
@@ -152,5 +158,6 @@
             <a href="mailto:support@flushyapp.com">support@flushyapp.com</a>
         </p>
     </div>
+    <script>lucide.createIcons();</script>
 </body>
 </html>

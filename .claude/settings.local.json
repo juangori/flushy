@@ -19,7 +19,8 @@
       "Bash(grep:*)",
       "Bash(python:*)",
       "Bash(copy:*)",
-      "Bash(copy \"c:\\\\Users\\\\juang\\\\Documents\\\\flushy\\\\terms-of-service.html\" \"c:\\\\Users\\\\juang\\\\Documents\\\\flushy\\\\docs\\\\terms-of-service.html\")"
+      "Bash(copy \"c:\\\\Users\\\\juang\\\\Documents\\\\flushy\\\\terms-of-service.html\" \"c:\\\\Users\\\\juang\\\\Documents\\\\flushy\\\\docs\\\\terms-of-service.html\")",
+      "Bash(nslookup:*)"
     ]
   }
 }
