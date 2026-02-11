@@ -16,7 +16,10 @@
       "Bash(git -C \"c:\\\\Users\\\\juang\\\\Documents\\\\flushy\" show --stat HEAD)",
       "Bash(npx expo start)",
       "Bash(npx expo start:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(python:*)",
+      "Bash(copy:*)",
+      "Bash(copy \"c:\\\\Users\\\\juang\\\\Documents\\\\flushy\\\\terms-of-service.html\" \"c:\\\\Users\\\\juang\\\\Documents\\\\flushy\\\\docs\\\\terms-of-service.html\")"
     ]
   }
 }

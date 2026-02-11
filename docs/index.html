@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flushy - Gut Health & Stool Tracker</title>
+    <meta name="description" content="Track your gut health privately. All data stays on your device.">
+    <link rel="icon" type="image/png" href="icon.png">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(160deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+        .container {
+            max-width: 480px;
+            text-align: center;
+        }
+        .logo {
+            width: 96px;
+            height: 96px;
+            border-radius: 24px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 8px 32px rgba(139, 92, 246, 0.3);
+        }
+        h1 {
+            color: #FFFFFF;
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 0.5rem;
+        }
+        .tagline {
+            color: #8B5CF6;
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 2rem;
+        }
+        .description {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1rem;
+            line-height: 1.7;
+            margin-bottom: 2.5rem;
+        }
+        .badges {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 2.5rem;
+            flex-wrap: wrap;
+        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 8px 14px;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .badge-icon { font-size: 1rem; }
+        .store-links {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+        .store-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(139, 92, 246, 0.15);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            color: #a78bfa;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 14px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .store-link:hover {
+            background: rgba(139, 92, 246, 0.25);
+            border-color: rgba(139, 92, 246, 0.5);
+        }
+        .legal {
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .legal a {
+            color: rgba(255, 255, 255, 0.35);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.2s;
+        }
+        .legal a:hover {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        .contact {
+            margin-top: 1.5rem;
+            color: rgba(255, 255, 255, 0.25);
+            font-size: 0.8rem;
+        }
+        .contact a {
+            color: rgba(255, 255, 255, 0.35);
+            text-decoration: none;
+        }
+        .contact a:hover { color: #8B5CF6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="icon.png" alt="Flushy" class="logo">
+        <h1>Flushy</h1>
+        <p class="tagline">Gut Health & Stool Tracker</p>
+        <p class="description">
+            Track your gut health privately using the Bristol Stool Scale.
+            Log type, color, and patterns — all data stays on your device.
+            No accounts. No cloud. No tracking.
+        </p>
+
+        <div class="badges">
+            <span class="badge"><span class="badge-icon">🔒</span> 100% Private</span>
+            <span class="badge"><span class="badge-icon">📊</span> Smart Insights</span>
+            <span class="badge"><span class="badge-icon">🏆</span> Achievements</span>
+        </div>
+
+        <div class="store-links">
+            <!-- Update these links when your apps are live -->
+            <a href="#" class="store-link">Coming to App Store</a>
+            <a href="#" class="store-link">Coming to Google Play</a>
+        </div>
+
+        <div class="legal">
+            <a href="privacy-policy.html">Privacy Policy</a>
+            <a href="terms-of-service.html">Terms of Service</a>
+        </div>
+
+        <p class="contact">
+            <a href="mailto:support@flushyapp.com">support@flushyapp.com</a>
+        </p>
+    </div>
+</body>
+</html>

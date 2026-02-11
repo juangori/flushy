@@ -23,7 +23,12 @@ Your gut health says a lot about your overall well-being. Flushy makes it easy t
 - **Quick Tags** — Add context like coffee, stress, medication, exercise, dairy, spicy food, and more
 - **Gut Score** — Get a daily health assessment based on your logged data
 - **Insights & Patterns** — View weekly activity, streaks, and trends to understand your digestion
-- **Timeline View** — Browse your full history with detailed entries
+- **Timeline View** — Browse your full history with a calendar and detailed entries
+- **Achievements** — Stay motivated with badges for consistent tracking
+- **PDF Health Report** — Export a detailed report to share with your doctor
+- **Backup & Restore** — Protect your data with manual JSON backups
+- **Daily Reminders** — Never forget to log with customizable notifications
+- **5 Beautiful Themes** — Dark, Light, Nature, Blush, and Mono
 - **100% Private** — All data stays on your device. No accounts, no cloud, no tracking
 
 **Who is Flushy for?**
@@ -44,45 +49,111 @@ stool,tracker,gut,health,bristol,scale,bowel,digestion,ibs,poop,wellness,log
 - 4+ (iOS)
 - Everyone (Android)
 
-## Privacy Details (App Store Connect)
-- Data Not Collected — Flushy does not collect any user data
-- No third-party analytics or tracking
-- No account creation required
+## Price
+- $0.99 USD (paid upfront, no subscriptions, no in-app purchases)
 
-## Google Play Content Rating
-- IARC: All ages
-- No user-generated content
-- No ads
-- No in-app purchases
+## Support Email
+support@flushyapp.com
+
+---
+
+## URLs Required by Both Stores
+
+### Privacy Policy URL
+**Required by Apple AND Google.**
+File: `privacy-policy.html` (included in repo)
+
+### Terms of Service URL
+**Required by Apple. Recommended by Google.**
+File: `terms-of-service.html` (included in repo)
+
+### How to Host (free options)
+
+**Option A: GitHub Pages (recommended)**
+1. Push this repo to GitHub (or create a separate public repo)
+2. Go to Settings > Pages > Enable from `main` branch
+3. Your URLs will be:
+   - `https://YOUR_USERNAME.github.io/flushy/privacy-policy.html`
+   - `https://YOUR_USERNAME.github.io/flushy/terms-of-service.html`
+
+**Option B: Netlify Drop (quickest)**
+1. Go to https://app.netlify.com/drop
+2. Drag & drop the two HTML files
+3. Get instant public URLs
+
+**Option C: Custom domain**
+If you own a domain like `flushyapp.com`:
+- Host at `https://flushyapp.com/privacy`
+- Host at `https://flushyapp.com/terms`
+
+---
+
+## Privacy Details (App Store Connect)
+
+### Apple App Privacy Labels
+When asked "What data does your app collect?", select:
+- **Data Not Collected** — Flushy does not collect any user data
+
+This is accurate because:
+- No analytics SDKs
+- No tracking
+- No account/login
+- No network requests
+- All data local-only
+
+### Google Play Data Safety
+When filling out the Data Safety form:
+- **Does your app collect or share any of the required user data types?** → No
+- **Is all of the user data collected by your app encrypted in transit?** → N/A (no data transmitted)
+- **Do you provide a way for users to request that their data is deleted?** → Yes (in-app reset feature)
 
 ---
 
 ## Screenshots Needed
 
 ### iPhone (6.7" - iPhone 15 Pro Max) - Required sizes: 1290 x 2796px
-1. **Home Screen** — Show the main logging interface with Bristol Scale selector
-2. **Color & Tags** — Show the color picker and quick tags selection
-3. **Timeline** — Show the history view with logged entries
-4. **Insights** — Show the insights dashboard with Gut Score and patterns
-5. **Privacy Message** — Show onboarding screen emphasizing privacy
+1. **Home Screen** — Show dashboard with stats, streak, and recent logs
+2. **Log Screen** — Show Bristol Scale selector with type selected
+3. **Color & Tags** — Show color picker and quick tags selection
+4. **Timeline** — Show calendar with health dots and selected day entries
+5. **Insights** — Show type distribution, gut score, and achievements
+
+### iPhone (6.1" - iPhone 15) - Required sizes: 1179 x 2556px
+Same 5 screenshots (can scale from 6.7")
 
 ### iPad (12.9") - Required if supportsTablet is true: 2048 x 2732px
 Same 5 screenshots adapted for tablet
 
-### Android (Phone) - Recommended: 1080 x 1920px or 1440 x 2560px
+### Android (Phone) - Recommended: 1080 x 1920px
 Same 5 screenshots
+
+### Screenshot Headlines (overlay text)
+1. "Track with the Bristol Scale"
+2. "Monitor Color & Patterns"
+3. "Add Context with Quick Tags"
+4. "Your Complete Health Timeline"
+5. "Understand Your Gut"
 
 ---
 
 ## Tips for Taking Screenshots
 
 1. Use Expo on a simulator/emulator with the correct resolution
-2. Add some sample data first so screens look populated
-3. You can use tools like **Fastlane Screengrab** (Android) or **Fastlane Snapshot** (iOS)
-4. Or use **screenshots.pro** / **AppMockup** to add device frames and marketing text
-5. Each screenshot should have a short headline overlay like:
-   - "Track with the Bristol Scale"
-   - "Monitor Color & Patterns"
-   - "Your Complete History"
-   - "Understand Your Gut"
-   - "100% Private. Always."
+2. Add sample data first so screens look populated (log 7+ days of varied data)
+3. Use tools like **AppMockup** (appmockup.io) or **Previewed** (previewed.app) to add device frames and headline text
+4. Keep the Dark theme for primary screenshots (most impactful)
+5. Consider showing one screenshot with a different theme to highlight customization
+
+---
+
+## App Review Notes (for Apple reviewers)
+
+Use this text in the "Notes" field when submitting for review:
+
+```
+Flushy is a gut health tracking app based on the Bristol Stool Scale.
+All data is stored locally on the device — there are no accounts, no servers, and no data collection.
+The app does not provide medical diagnosis or treatment recommendations.
+Health tips and wellness information are sourced from established medical guidelines (WHO, WGO, Bristol Royal Infirmary).
+No login is required to test the app — simply complete the brief onboarding flow.
+```
